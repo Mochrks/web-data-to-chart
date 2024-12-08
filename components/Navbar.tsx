@@ -16,7 +16,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <ModeToggle />
             <Button variant="ghost" size="icon" asChild>
-              <a href="https://github.com/Mochrks/web-data-to-charts" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/Mochrks/web-data-to-chart" target="_blank" rel="noopener noreferrer">
                 <Github className="h-5 w-5" />
                 <span className="sr-only">GitHub repository</span>
               </a>

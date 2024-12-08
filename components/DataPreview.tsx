@@ -23,7 +23,7 @@ import { Slider } from '@/components/ui/slider'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowUpDown, ChevronFirst, ChevronLast, ChevronsUpDown, Filter, X, Download, Upload } from 'lucide-react'
+import { ChevronFirst, ChevronLast, ChevronsUpDown, Filter, X, Download, Upload } from 'lucide-react'
 import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
 
@@ -44,8 +44,8 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
     if (data.length === 0) return []
     return Object.keys(data[0]).map(key => ({
       key,
-      type: typeof data[0][key] === 'number' ? 'number' : 
-             data[0][key] instanceof Date ? 'date' : 'text'
+      type: typeof data[0][key] === 'number' ? 'number' :
+        data[0][key] instanceof Date ? 'date' : 'text'
     }))
   }, [data])
 
@@ -67,7 +67,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
     // Apply search filter
     if (searchTerm) {
       processedData = processedData.filter(item =>
-        Object.entries(item).some(([key, value]) => 
+        Object.entries(item).some(([key, value]) =>
           value.toString().toLowerCase().includes(searchTerm.toLowerCase()) &&
           visibleColumns.includes(key)
         )
@@ -141,8 +141,8 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
   }
 
   const handleColumnToggle = (columnKey: string) => {
-    setVisibleColumns(prev => 
-      prev.includes(columnKey) 
+    setVisibleColumns(prev =>
+      prev.includes(columnKey)
         ? prev.filter(key => key !== columnKey)
         : [...prev, columnKey]
     )
@@ -277,9 +277,9 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button 
-          onClick={resetFilters} 
-          variant="outline" 
+        <Button
+          onClick={resetFilters}
+          variant="outline"
           className="w-full sm:w-auto"
           disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
         >
