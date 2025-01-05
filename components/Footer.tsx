@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="text-gray-600 dark:text-gray-300">
-            © 2023 All rights reserved.
+            &copy; {new Date().getFullYear()} All rights reserved.
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-gray-600 dark:text-gray-300">Created by</span>
