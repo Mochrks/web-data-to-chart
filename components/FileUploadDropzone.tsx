@@ -5,9 +5,9 @@ import { useDropzone } from 'react-dropzone'
 import * as XLSX from 'xlsx'
 import { motion } from 'framer-motion'
 import { Cloud, File, Loader2 } from 'lucide-react'
-// import { toast } from '@/components/ui/toast'
 
 interface FileUploadDropzoneProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDataUpload: (data: any[]) => void
 }
 
@@ -56,34 +56,36 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
   })
 
   return (
-    <div
-      {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors duration-300 ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 dark:border-gray-700'
-        }`}
-    >
-      <input {...getInputProps()} />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-4"
+    <div className='w-full h-full flex items-center justify-center'>
+      <div
+        {...getRootProps()}
+        className={`w-[50%] border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors duration-300 ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 dark:border-gray-700'
+          }`}
       >
-        {isLoading ? (
-          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-        ) : isDragActive ? (
-          <Cloud className="h-10 w-10 text-primary mx-auto" />
-        ) : (
-          <File className="h-10 w-10 text-gray-400 dark:text-gray-600 mx-auto" />
-        )}
-        <h3 className="text-lg font-semibold">
-          {isLoading ? 'Processing your file...' : isDragActive ? 'Drop the file here' : 'Drag & drop your file here'}
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {isLoading
-            ? 'Please wait while we process your data'
-            : 'Supports Excel (.xlsx) and CSV (.csv) files'}
-        </p>
-      </motion.div>
+        <input {...getInputProps()} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-4"
+        >
+          {isLoading ? (
+            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+          ) : isDragActive ? (
+            <Cloud className="h-10 w-10 text-primary mx-auto" />
+          ) : (
+            <File className="h-10 w-10 text-gray-400 dark:text-gray-600 mx-auto" />
+          )}
+          <h3 className="text-lg font-semibold">
+            {isLoading ? 'Processing your file...' : isDragActive ? 'Drop the file here' : 'Drag & drop your file here'}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {isLoading
+              ? 'Please wait while we process your data'
+              : 'Supports Excel (.xlsx) and CSV (.csv) files'}
+          </p>
+        </motion.div>
+      </div>
     </div>
   )
 }

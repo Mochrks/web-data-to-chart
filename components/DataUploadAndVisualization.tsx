@@ -8,9 +8,11 @@ import ChartView from './ChartView'
 import { Button } from '@/components/ui/button'
 
 export default function DataUploadAndVisualization() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any[]>([])
   const [showChart, setShowChart] = useState(false)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDataUpload = (uploadedData: any[]) => {
     setData(uploadedData)
     setShowChart(false)

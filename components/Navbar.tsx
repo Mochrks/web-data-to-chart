@@ -10,7 +10,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center">
           <div className="text-xl font-semibold text-foreground">
             <Link href="/" className="hover:text-primary transition-colors">
-              Data Apps
+              Data To Chart Apps
             </Link>
           </div>
           <div className="flex items-center space-x-4">

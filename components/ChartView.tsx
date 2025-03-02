@@ -13,11 +13,13 @@ const chartTypes = ['bar', 'line', 'pie', 'doughnut', 'polarArea', 'radar'] as c
 type ChartType = typeof chartTypes[number]
 
 interface ChartViewProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
 }
 
 export default function ChartView({ data }: ChartViewProps) {
   const [chartType, setChartType] = useState<ChartType>('bar')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any>(null)
 
   useEffect(() => {

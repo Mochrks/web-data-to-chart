@@ -28,8 +28,10 @@ import { format } from 'date-fns'
 import * as XLSX from 'xlsx'
 
 interface DataPreviewProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
-  onDataChange: (newData: any[]) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onDataChange?: (newData: any[]) => void
 }
 
 type FilterType = {
@@ -68,7 +70,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
     if (searchTerm) {
       processedData = processedData.filter(item =>
         Object.entries(item).some(([key, value]) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase()) &&
+          (value as string).toLowerCase().includes(searchTerm.toLowerCase()) &&
           visibleColumns.includes(key)
         )
       )
@@ -165,7 +167,9 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
         const json = XLSX.utils.sheet_to_json(worksheet)
-        onDataChange(json)
+        if (onDataChange) {
+          onDataChange(json);
+        }
       }
       reader.readAsArrayBuffer(file)
     }
@@ -203,7 +207,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
                   max={Math.max(...data.map(item => item[column.key]))}
                   step={1}
                   value={currentFilter?.value as [number, number] || [0, 100]}
-                  onValueChange={(value) => handleFilter(column.key, value, 'number')}
+                  onValueChange={(value: number[]) => handleFilter(column.key, [value[0], value[1]], 'number')}
                 />
                 <div className="flex justify-between text-sm">
                   <span>{(currentFilter?.value as [number, number])?.[0] || 0}</span>
@@ -214,8 +218,8 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
             {column.type === 'date' && (
               <Calendar
                 mode="single"
-                selected={currentFilter?.value as Date || undefined}
-                onSelect={(date) => handleFilter(column.key, date, 'date')}
+                selected={currentFilter?.value as Date ?? null}
+                onSelect={(date) => date && handleFilter(column.key, date, 'date')}
                 initialFocus
               />
             )}
@@ -230,7 +234,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
     const maxButtons = 5
 
     let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2))
-    let endPage = Math.min(totalPages, startPage + maxButtons - 1)
+    const endPage = Math.min(totalPages, startPage + maxButtons - 1)
 
     if (endPage - startPage + 1 < maxButtons) {
       startPage = Math.max(1, endPage - maxButtons + 1)
