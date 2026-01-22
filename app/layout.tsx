@@ -1,11 +1,12 @@
 import { Metadata } from 'next'
 import { ThemeProvider } from "@/components/theme-provider"
-import { Poppins } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import '@/app/globals.css'
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "600"], // Add this line
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={poppins.className}>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

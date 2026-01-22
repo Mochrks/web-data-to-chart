@@ -262,122 +262,127 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
-      <h2 className="text-2xl font-semibold">Data Preview</h2>
-      <div className="flex flex-wrap gap-4 mb-4">
-        <Input
-          type="text"
-          placeholder="Search visible columns..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="w-full sm:w-auto"
-        />
-        <Select onValueChange={(value: string) => setItemsPerPage(parseInt(value))}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Items per page" />
-          </SelectTrigger>
-          <SelectContent>
-            {[5, 10, 20, 50].map(value => (
-              <SelectItem key={value} value={value.toString()}>{value} per page</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          onClick={resetFilters}
-          variant="outline"
-          className="w-full sm:w-auto"
-          disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
-        >
-          Reset Filters
-          <X className="ml-2 h-4 w-4" />
-        </Button>
-        <Button onClick={exportToExcel} variant="outline" className="w-full sm:w-auto">
-          Export
-          <Download className="ml-2 h-4 w-4" />
-        </Button>
-        <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full sm:w-auto">
-          Import
-          <Upload className="ml-2 h-4 w-4" />
-        </Button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={importFromExcel}
-          accept=".xlsx, .xls"
-          style={{ display: 'none' }}
-        />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-auto">Customize Columns</Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="grid gap-4">
-              <h4 className="font-medium leading-none">Select visible columns</h4>
-              {columns.map(column => (
-                <div key={column.key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={column.key}
-                    checked={visibleColumns.includes(column.key)}
-                    onCheckedChange={() => handleColumnToggle(column.key)}
-                  />
-                  <label htmlFor={column.key} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {column.key}
-                  </label>
-                </div>
+      <div className="glass-card rounded-2xl p-6 border-2">
+        <h2 className="text-3xl font-bold mb-6 gradient-text">Data Preview</h2>
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Input
+            type="text"
+            placeholder="Search visible columns..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full sm:w-auto glass border-primary/30 hover:border-primary transition-all"
+          />
+          <Select onValueChange={(value: string) => setItemsPerPage(parseInt(value))} defaultValue="5">
+            <SelectTrigger className="w-full sm:w-[180px] glass border-primary/30">
+              <SelectValue placeholder="Items per page" />
+            </SelectTrigger>
+            <SelectContent>
+              {[5, 10, 20, 50].map(value => (
+                <SelectItem key={value} value={value.toString()}>{value} per page</SelectItem>
               ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-      <div className="rounded-md border overflow-x-auto max-w-full">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.filter(column => visibleColumns.includes(column.key)).map((column) => (
-                <TableHead key={column.key} className="whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span
-                      className="cursor-pointer"
-                      onClick={() => handleSort(column.key)}
-                    >
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={resetFilters}
+            variant="outline"
+            className="w-full sm:w-auto hover-lift hover:border-primary transition-all"
+            disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
+          >
+            Reset Filters
+            <X className="ml-2 h-4 w-4" />
+          </Button>
+          <Button onClick={exportToExcel} variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">
+            Export
+            <Download className="ml-2 h-4 w-4" />
+          </Button>
+          <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">
+            Import
+            <Upload className="ml-2 h-4 w-4" />
+          </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={importFromExcel}
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
+          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">Customize Columns</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 glass-card">
+              <div className="grid gap-4">
+                <h4 className="font-semibold text-base">Select visible columns</h4>
+                {columns.map(column => (
+                  <div key={column.key} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={column.key}
+                      checked={visibleColumns.includes(column.key)}
+                      onCheckedChange={() => handleColumnToggle(column.key)}
+                    />
+                    <label htmlFor={column.key} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       {column.key}
-                    </span>
-                    <div className="flex ml-2">
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 p-0"
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="rounded-xl border-2 border-border/50 overflow-hidden glass">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10">
+                {columns.filter(column => visibleColumns.includes(column.key)).map((column) => (
+                  <TableHead key={column.key} className="whitespace-nowrap font-semibold">
+                    <div className="flex items-center">
+                      <span
+                        className="cursor-pointer hover:text-primary transition-colors"
                         onClick={() => handleSort(column.key)}
                       >
-                        <ChevronsUpDown className="h-4 w-4" />
-                      </Button>
-                      {renderFilterPopover(column)}
+                        {column.key}
+                      </span>
+                      <div className="flex ml-2">
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-primary/20 transition-all"
+                          onClick={() => handleSort(column.key)}
+                        >
+                          <ChevronsUpDown className="h-4 w-4" />
+                        </Button>
+                        {renderFilterPopover(column)}
+                      </div>
                     </div>
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentItems.map((item, index) => (
-              <TableRow key={index}>
-                {columns.filter(column => visibleColumns.includes(column.key)).map(column => (
-                  <TableCell key={column.key}>
-                    {column.type === 'date'
-                      ? format(new Date(item[column.key]), 'PP')
-                      : item[column.key]}
-                  </TableCell>
+                  </TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {currentItems.map((item, index) => (
+                <TableRow
+                  key={index}
+                  className="hover:bg-primary/5 transition-colors border-b border-border/30"
+                >
+                  {columns.filter(column => visibleColumns.includes(column.key)).map(column => (
+                    <TableCell key={column.key} className="font-medium">
+                      {column.type === 'date'
+                        ? format(new Date(item[column.key]), 'PP')
+                        : item[column.key]}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
         <div className="flex items-center space-x-2 overflow-x-auto max-w-full">
           <Button
             variant="outline"
             onClick={() => paginate(1)}
             disabled={currentPage === 1}
-            className="px-2 sm:px-3"
+            className="px-2 sm:px-3 hover-lift hover:border-primary"
           >
             <ChevronFirst className="h-4 w-4" />
           </Button>
@@ -385,7 +390,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
             variant="outline"
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 sm:px-3"
+            className="px-2 sm:px-3 hover-lift hover:border-primary"
           >
             Previous
           </Button>
@@ -394,7 +399,7 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
             variant="outline"
             onClick={() => paginate(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 sm:px-3"
+            className="px-2 sm:px-3 hover-lift hover:border-primary"
           >
             Next
           </Button>
@@ -402,13 +407,13 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
             variant="outline"
             onClick={() => paginate(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-2 sm:px-3"
+            className="px-2 sm:px-3 hover-lift hover:border-primary"
           >
             <ChevronLast className="h-4 w-4" />
           </Button>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-sm">Go to page:</span>
+          <span className="text-sm font-medium">Go to page:</span>
           <Input
             type="number"
             min={1}
@@ -420,9 +425,9 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
                 paginate(page)
               }
             }}
-            className="w-16"
+            className="w-16 glass border-primary/30"
           />
-          <span className="text-sm">of {totalPages}</span>
+          <span className="text-sm font-medium">of {totalPages}</span>
         </div>
       </div>
     </motion.div>

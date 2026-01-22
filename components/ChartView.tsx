@@ -17,6 +17,25 @@ interface ChartViewProps {
   data: any[]
 }
 
+// Modern vibrant color palette
+const modernColors = [
+  'rgba(139, 92, 246, 0.8)',   // Purple
+  'rgba(236, 72, 153, 0.8)',   // Pink
+  'rgba(59, 130, 246, 0.8)',   // Blue
+  'rgba(251, 191, 36, 0.8)',   // Amber 
+  'rgba(16, 185, 129, 0.8)',   // Emerald
+  'rgba(249, 115, 22, 0.8)',   // Orange
+]
+
+const borderColors = [
+  'rgba(139, 92, 246, 1)',
+  'rgba(236, 72, 153, 1)',
+  'rgba(59, 130, 246, 1)',
+  'rgba(251, 191, 36, 1)',
+  'rgba(16, 185, 129, 1)',
+  'rgba(249, 115, 22, 1)',
+]
+
 export default function ChartView({ data }: ChartViewProps) {
   const [chartType, setChartType] = useState<ChartType>('bar')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,9 +47,9 @@ export default function ChartView({ data }: ChartViewProps) {
       const datasets = labels.map((label, index) => ({
         label,
         data: data.map((item) => item[label]),
-        backgroundColor: `hsl(${index * 360 / labels.length}, 70%, 50%)`,
-        borderColor: `hsl(${index * 360 / labels.length}, 70%, 40%)`,
-        borderWidth: 1,
+        backgroundColor: modernColors[index % modernColors.length],
+        borderColor: borderColors[index % borderColors.length],
+        borderWidth: 2,
       }))
 
       setChartData({
@@ -51,10 +70,22 @@ export default function ChartView({ data }: ChartViewProps) {
         plugins: {
           legend: {
             position: 'top' as const,
+            labels: {
+              font: {
+                family: 'Inter',
+                size: 12,
+              },
+              padding: 15,
+            },
           },
           title: {
             display: true,
             text: 'Data Visualization',
+            font: {
+              family: 'Inter',
+              size: 18,
+              weight: 'bold' as const,
+            },
           },
         },
       },
@@ -85,15 +116,15 @@ export default function ChartView({ data }: ChartViewProps) {
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Visualization</CardTitle>
-          <CardDescription>Choose a chart type to visualize your data</CardDescription>
+      <Card className="glass-card border-2 hover-lift">
+        <CardHeader className="border-b border-border/50">
+          <CardTitle className="text-2xl gradient-text">Data Visualization</CardTitle>
+          <CardDescription className="text-base">Choose a chart type to visualize your data</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Select onValueChange={(value: ChartType) => setChartType(value)}>
-              <SelectTrigger className="w-[180px]">
+        <CardContent className="pt-6">
+          <div className="mb-6">
+            <Select onValueChange={(value: ChartType) => setChartType(value)} defaultValue="bar">
+              <SelectTrigger className="w-[200px] glass border-primary/30 hover:border-primary transition-all">
                 <SelectValue placeholder="Select chart type" />
               </SelectTrigger>
               <SelectContent>
@@ -105,10 +136,9 @@ export default function ChartView({ data }: ChartViewProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="w-full h-[400px]">{renderChart()}</div>
+          <div className="w-full h-[450px] p-4 rounded-xl glass">{renderChart()}</div>
         </CardContent>
       </Card>
     </motion.div>
   )
 }
-
