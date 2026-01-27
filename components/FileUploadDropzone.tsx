@@ -2,52 +2,97 @@
 
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import * as XLSX from 'xlsx'
-import { motion } from 'framer-motion'
-import { Cloud, File, Loader2, Upload } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Cloud, FileSpreadsheet, Loader2, Upload, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { parseCSV } from '@/lib/csv-parser'
+import { ColumnSchema } from '@/lib/data-types'
+import { Progress } from '@/components/ui/progress'
 
 interface FileUploadDropzoneProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onDataUpload: (data: any[]) => void
+  onDataUpload: (data: Record<string, unknown>[], schema: ColumnSchema[]) => void
+}
+
+interface UploadState {
+  status: 'idle' | 'parsing' | 'success' | 'error'
+  progress: number
+  message: string
+  fileName?: string
+  rowCount?: number
 }
 
 export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [uploadState, setUploadState] = useState<UploadState>({
+    status: 'idle',
+    progress: 0,
+    message: '',
+  })
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
-    if (file) {
-      setIsLoading(true)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result
-          const workbook = XLSX.read(data, { type: 'array' })
-          const sheetName = workbook.SheetNames[0]
-          const worksheet = workbook.Sheets[sheetName]
-          const json = XLSX.utils.sheet_to_json(worksheet)
-          onDataUpload(json)
-        } catch (error) {
-          console.error('Error parsing file:', error)
-        } finally {
-          setIsLoading(false)
-        }
-      }
-      reader.readAsArrayBuffer(file)
+    if (!file) return
+
+    setUploadState({
+      status: 'parsing',
+      progress: 0,
+      message: 'Reading file...',
+      fileName: file.name,
+    })
+
+    try {
+      const result = await parseCSV(file, {
+        onProgress: (percent) => {
+          setUploadState(prev => ({
+            ...prev,
+            progress: percent,
+            message: percent < 50 ? 'Parsing CSV...' : 'Detecting data types...',
+          }))
+        },
+      })
+
+      setUploadState({
+        status: 'success',
+        progress: 100,
+        message: `Successfully loaded ${result.totalRows.toLocaleString()} rows`,
+        fileName: file.name,
+        rowCount: result.totalRows,
+      })
+
+      // Pass data and schema to parent after a brief delay for UX
+      setTimeout(() => {
+        onDataUpload(result.data, result.schema)
+      }, 500)
+
+    } catch (error) {
+      console.error('Error parsing file:', error)
+      setUploadState({
+        status: 'error',
+        progress: 0,
+        message: error instanceof Error ? error.message : 'Failed to parse file',
+        fileName: file.name,
+      })
     }
   }, [onDataUpload])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
+      'text/csv': ['.csv'],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv']
+      'application/vnd.ms-excel': ['.xls'],
     },
-    multiple: false
+    multiple: false,
   })
 
+  const resetUpload = () => {
+    setUploadState({
+      status: 'idle',
+      progress: 0,
+      message: '',
+    })
+  }
+
   return (
-    <div className='w-full h-full flex items-center justify-center'>
+    <div className="w-full flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -56,60 +101,188 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
       >
         <div
           {...getRootProps()}
-          className={`glass-card rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 border-2 border-dashed hover-lift ${isDragActive
-              ? 'border-primary bg-primary/10 glow-md scale-105'
-              : 'border-border hover:border-primary/50 hover:glow-sm'
-            }`}
+          className={`clay-card rounded-3xl p-10 text-center cursor-pointer transition-all duration-300 
+            ${isDragActive
+              ? 'ring-4 ring-primary/30 scale-[1.02]'
+              : 'hover:ring-2 hover:ring-primary/20'
+            }
+            ${uploadState.status === 'error' ? 'ring-2 ring-destructive/30' : ''}
+            ${uploadState.status === 'success' ? 'ring-2 ring-green-500/30' : ''}
+          `}
         >
           <input {...getInputProps()} />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-6"
-          >
-            <div className="flex justify-center">
-              {isLoading ? (
-                <Loader2 className="h-16 w-16 animate-spin text-primary" />
-              ) : isDragActive ? (
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 0.5, repeat: Infinity }}
-                >
-                  <Cloud className="h-16 w-16 text-primary" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  className="relative"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Upload className="h-16 w-16 text-primary animate-float" />
-                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
-                </motion.div>
-              )}
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold mb-2 gradient-text">
-                {isLoading ? 'Processing your file...' : isDragActive ? 'Drop the file here' : 'Drag & drop your file here'}
-              </h3>
-              <p className="text-base text-muted-foreground">
-                {isLoading
-                  ? 'Please wait while we process your data'
-                  : 'Supports Excel (.xlsx) and CSV (.csv) files'}
-              </p>
-              {!isLoading && !isDragActive && (
-                <motion.p
-                  className="text-sm text-primary font-semibold mt-4"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  or click to browse
-                </motion.p>
-              )}
-            </div>
-          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {uploadState.status === 'idle' && (
+              <motion.div
+                key="idle"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-center">
+                  {isDragActive ? (
+                    <motion.div
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ duration: 0.6, repeat: Infinity }}
+                    >
+                      <div className="relative">
+                        <Cloud className="h-20 w-20 text-primary" />
+                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl" />
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      className="relative"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <div className="clay-inset p-6 rounded-full">
+                        <Upload className="h-16 w-16 text-primary animate-bounce-soft" />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold mb-3 gradient-text">
+                    {isDragActive ? 'Drop your file here' : 'Drag & drop your data file'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Supports CSV and Excel files (.csv, .xlsx, .xls)
+                  </p>
+                  {!isDragActive && (
+                    <motion.p
+                      className="text-sm text-primary font-medium mt-4"
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      or click to browse files
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* File type badges */}
+                <div className="flex justify-center gap-3 mt-4">
+                  {['.CSV', '.XLSX', '.XLS'].map((ext) => (
+                    <span
+                      key={ext}
+                      className="clay-badge text-xs text-muted-foreground"
+                    >
+                      {ext}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {uploadState.status === 'parsing' && (
+              <motion.div
+                key="parsing"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 py-4"
+              >
+                <div className="flex justify-center">
+                  <div className="clay-inset p-6 rounded-full">
+                    <Loader2 className="h-14 w-14 text-primary animate-spin" />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{uploadState.message}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {uploadState.fileName}
+                  </p>
+
+                  <div className="max-w-md mx-auto">
+                    <Progress value={uploadState.progress} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {Math.round(uploadState.progress)}% complete
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {uploadState.status === 'success' && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 py-4"
+              >
+                <div className="flex justify-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                  >
+                    <div className="clay-badge p-4 rounded-full bg-green-100 dark:bg-green-900/30">
+                      <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+                    </div>
+                  </motion.div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-green-700 dark:text-green-400">
+                    {uploadState.message}
+                  </h3>
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    <span>{uploadState.fileName}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {uploadState.status === 'error' && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 py-4"
+              >
+                <div className="flex justify-center">
+                  <div className="clay-badge p-4 rounded-full bg-red-100 dark:bg-red-900/30">
+                    <AlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-red-700 dark:text-red-400">
+                    Upload Failed
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {uploadState.message}
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      resetUpload()
+                    }}
+                    className="clay-button text-sm"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
+        {/* Performance hint for large files */}
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          💡 Optimized for large datasets (10k-100k+ rows) with streaming processing
+        </p>
       </motion.div>
     </div>
   )

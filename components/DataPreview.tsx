@@ -2,14 +2,24 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -19,75 +29,265 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ChevronFirst, ChevronLast, ChevronsUpDown, Filter, X, Download, Upload } from 'lucide-react'
-import { format } from 'date-fns'
-import * as XLSX from 'xlsx'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Label } from '@/components/ui/label'
+import {
+  ChevronFirst,
+  ChevronLast,
+  ChevronsUpDown,
+  Filter,
+  X,
+  Download,
+  Settings2,
+  GripVertical,
+
+  Hash,
+  Type,
+  Calendar,
+  ToggleLeft,
+  Pencil,
+  Check,
+} from 'lucide-react'
+import { ColumnSchema, formatValue, DataType } from '@/lib/data-types'
+import { downloadCSV } from '@/lib/csv-parser'
 
 interface DataPreviewProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onDataChange?: (newData: any[]) => void
+  data: Record<string, unknown>[]
+  schema: ColumnSchema[]
+  onSchemaChange?: (schema: ColumnSchema[]) => void
 }
 
 type FilterType = {
   [key: string]: {
-    type: 'text' | 'number' | 'date'
-    value: string | [number, number] | Date | null
+    type: 'text' | 'number'
+    value: string | [number, number]
   }
 }
 
-export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
-  const columns = useMemo(() => {
-    if (data.length === 0) return []
-    return Object.keys(data[0]).map(key => ({
-      key,
-      type: typeof data[0][key] === 'number' ? 'number' :
-        data[0][key] instanceof Date ? 'date' : 'text'
-    }))
-  }, [data])
+// Type icon mapping
+const TypeIcon: Record<DataType, typeof Hash> = {
+  'number': Hash,
+  'string': Type,
+  'date': Calendar,
+  'boolean': ToggleLeft,
+  'unknown': Type,
+}
 
+// Sortable column header component
+function SortableColumnHeader({
+  column,
+  onSort,
+  sortConfig,
+  onFilter,
+  currentFilter,
+  onRename,
+}: {
+  column: ColumnSchema
+  onSort: () => void
+  sortConfig: { key: string; direction: 'asc' | 'desc' } | null
+  onFilter: (value: string) => void
+  currentFilter?: { type: 'text' | 'number'; value: string | [number, number] }
+  onRename: (newLabel: string) => void
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(column.label)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: column.key })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.8 : 1,
+  }
+
+  const TypeIconComponent = TypeIcon[column.type]
+  const isSorted = sortConfig?.key === column.key
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditing])
+
+  const handleSaveRename = () => {
+    if (editValue.trim() && editValue !== column.label) {
+      onRename(editValue.trim())
+    }
+    setIsEditing(false)
+  }
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      className={`sticky top-0 bg-card px-4 py-3 text-left font-semibold border-b-2 border-border/50
+        ${isDragging ? 'shadow-clay-lg' : ''}`}
+    >
+      <div className="flex items-center gap-2">
+        {/* Drag handle */}
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+
+        {/* Column name (editable) */}
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <TypeIconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+
+          {isEditing ? (
+            <div className="flex items-center gap-1">
+              <Input
+                ref={inputRef}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={handleSaveRename}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveRename()
+                  if (e.key === 'Escape') {
+                    setEditValue(column.label)
+                    setIsEditing(false)
+                  }
+                }}
+                className="h-6 px-1 text-sm w-24"
+              />
+              <button
+                onClick={handleSaveRename}
+                className="text-primary hover:text-primary/80"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <span
+              className="truncate cursor-pointer hover:text-primary transition-colors"
+              onClick={onSort}
+              title={column.label}
+            >
+              {column.label}
+            </span>
+          )}
+
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+
+        {/* Sort and filter buttons */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onSort}
+            className={`p-1 rounded hover:bg-muted transition-colors
+              ${isSorted ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <ChevronsUpDown className="h-4 w-4" />
+          </button>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={`p-1 rounded hover:bg-muted transition-colors
+                  ${currentFilter ? 'text-primary' : 'text-muted-foreground'}`}
+              >
+                <Filter className="h-4 w-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 clay-dropdown p-4">
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">Filter {column.label}</h4>
+                <Input
+                  placeholder={`Search ${column.label}...`}
+                  value={(typeof currentFilter?.value === 'string' ? currentFilter.value : '') || ''}
+                  onChange={(e) => onFilter(e.target.value)}
+                  className="clay-input"
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+    </th>
+  )
+}
+
+export default function DataPreview({ data, schema, onSchemaChange }: DataPreviewProps) {
+  const [columns, setColumns] = useState<ColumnSchema[]>(schema)
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(5)
+  const [itemsPerPage, setItemsPerPage] = useState(25)
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
   const [filters, setFilters] = useState<FilterType>({})
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [useVirtualization] = useState(data.length > 500)
 
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  // Update columns when schema changes
   useEffect(() => {
-    setVisibleColumns(columns.map(col => col.key))
-  }, [columns])
+    setColumns(schema)
+  }, [schema])
 
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  // Visible columns only
+  const visibleColumns = useMemo(() =>
+    columns.filter(col => col.visible).sort((a, b) => a.order - b.order),
+    [columns]
+  )
+
+  // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
     let processedData = [...data]
 
     // Apply search filter
     if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase()
       processedData = processedData.filter(item =>
-        Object.entries(item).some(([key, value]) =>
-          (value as string).toLowerCase().includes(searchTerm.toLowerCase()) &&
-          visibleColumns.includes(key)
-        )
+        visibleColumns.some(col => {
+          const value = item[col.key]
+          return value !== null && value !== undefined &&
+            String(value).toLowerCase().includes(lowerSearch)
+        })
       )
     }
 
     // Apply column filters
     Object.entries(filters).forEach(([key, filter]) => {
       processedData = processedData.filter(item => {
+        const value = item[key]
+        if (value === null || value === undefined) return false
+
         if (filter.type === 'text') {
-          return item[key].toString().toLowerCase().includes((filter.value as string).toLowerCase())
+          return String(value).toLowerCase().includes((filter.value as string).toLowerCase())
         } else if (filter.type === 'number') {
           const [min, max] = filter.value as [number, number]
-          return item[key] >= min && item[key] <= max
-        } else if (filter.type === 'date') {
-          const filterDate = filter.value as Date
-          const itemDate = new Date(item[key])
-          return itemDate.toDateString() === filterDate.toDateString()
+          const numValue = Number(value)
+          return !isNaN(numValue) && numValue >= min && numValue <= max
         }
         return true
       })
@@ -96,143 +296,115 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
     // Apply sorting
     if (sortConfig) {
       processedData.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1
+        const aVal = a[sortConfig.key]
+        const bVal = b[sortConfig.key]
+
+        if (aVal === null || aVal === undefined) return 1
+        if (bVal === null || bVal === undefined) return -1
+
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1
-        }
-        return 0
+
+        const aStr = String(aVal)
+        const bStr = String(bVal)
+        return sortConfig.direction === 'asc'
+          ? aStr.localeCompare(bStr)
+          : bStr.localeCompare(aStr)
       })
     }
 
     return processedData
   }, [data, searchTerm, sortConfig, filters, visibleColumns])
 
+  // Pagination
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage)
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredAndSortedData.slice(indexOfFirstItem, indexOfLastItem)
+  const paginatedData = useMemo(() => {
+    if (useVirtualization) return filteredAndSortedData
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredAndSortedData.slice(start, start + itemsPerPage)
+  }, [filteredAndSortedData, currentPage, itemsPerPage, useVirtualization])
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+  // Virtualizer for large datasets
+  const rowVirtualizer = useVirtualizer({
+    count: filteredAndSortedData.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 48,
+    overscan: 10,
+  })
 
-  const handleSort = (key: string) => {
-    setSortConfig(prevConfig => {
-      if (!prevConfig || prevConfig.key !== key) {
-        return { key, direction: 'asc' }
-      }
-      if (prevConfig.direction === 'asc') {
-        return { key, direction: 'desc' }
-      }
+  // Handlers
+  const handleSort = useCallback((key: string) => {
+    setSortConfig(prev => {
+      if (!prev || prev.key !== key) return { key, direction: 'asc' }
+      if (prev.direction === 'asc') return { key, direction: 'desc' }
       return null
     })
-  }
-
-  const handleFilter = useCallback((key: string, value: string | [number, number] | Date | null, type: 'text' | 'number' | 'date') => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: { type, value }
-    }))
   }, [])
 
-  const resetFilters = () => {
+  const handleFilter = useCallback((key: string, value: string) => {
+    setFilters(prev => {
+      if (!value) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [key]: removed, ...rest } = prev
+        return rest
+      }
+      return { ...prev, [key]: { type: 'text', value } }
+    })
+    setCurrentPage(1)
+  }, [])
+
+  const handleColumnToggle = useCallback((key: string) => {
+    setColumns(prev => {
+      const updated = prev.map(col =>
+        col.key === key ? { ...col, visible: !col.visible } : col
+      )
+      onSchemaChange?.(updated)
+      return updated
+    })
+  }, [onSchemaChange])
+
+  const handleColumnRename = useCallback((key: string, newLabel: string) => {
+    setColumns(prev => {
+      const updated = prev.map(col =>
+        col.key === key ? { ...col, label: newLabel } : col
+      )
+      onSchemaChange?.(updated)
+      return updated
+    })
+  }, [onSchemaChange])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setColumns(prev => {
+      const oldIndex = prev.findIndex(col => col.key === active.id)
+      const newIndex = prev.findIndex(col => col.key === over.id)
+      const reordered = arrayMove(prev, oldIndex, newIndex).map((col, idx) => ({
+        ...col,
+        order: idx,
+      }))
+      onSchemaChange?.(reordered)
+      return reordered
+    })
+  }, [onSchemaChange])
+
+  const handleExport = useCallback(() => {
+    const visibleKeys = visibleColumns.map(col => col.key)
+    downloadCSV(filteredAndSortedData, 'export.csv', visibleKeys)
+  }, [filteredAndSortedData, visibleColumns])
+
+  const resetFilters = useCallback(() => {
     setFilters({})
     setSearchTerm('')
     setSortConfig(null)
     setCurrentPage(1)
-  }
-
-  const handleColumnToggle = (columnKey: string) => {
-    setVisibleColumns(prev =>
-      prev.includes(columnKey)
-        ? prev.filter(key => key !== columnKey)
-        : [...prev, columnKey]
-    )
-  }
-
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredAndSortedData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Data')
-    XLSX.writeFile(wb, 'exported_data.xlsx')
-  }
-
-  const importFromExcel = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const data = e.target?.result
-        const workbook = XLSX.read(data, { type: 'array' })
-        const sheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[sheetName]
-        const json = XLSX.utils.sheet_to_json(worksheet)
-        if (onDataChange) {
-          onDataChange(json);
-        }
-      }
-      reader.readAsArrayBuffer(file)
-    }
-  }
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-    setCurrentPage(1)
-  }
-
-  const renderFilterPopover = (column: { key: string; type: string }) => {
-    const currentFilter = filters[column.key]
-
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="grid gap-4">
-            <h4 className="font-medium leading-none">Filter {column.key}</h4>
-            {column.type === 'text' && (
-              <Input
-                placeholder={`Filter ${column.key}...`}
-                value={(currentFilter?.value as string) || ''}
-                onChange={(e) => handleFilter(column.key, e.target.value, 'text')}
-              />
-            )}
-            {column.type === 'number' && (
-              <div className="grid gap-2">
-                <Slider
-                  min={Math.min(...data.map(item => item[column.key]))}
-                  max={Math.max(...data.map(item => item[column.key]))}
-                  step={1}
-                  value={currentFilter?.value as [number, number] || [0, 100]}
-                  onValueChange={(value: number[]) => handleFilter(column.key, [value[0], value[1]], 'number')}
-                />
-                <div className="flex justify-between text-sm">
-                  <span>{(currentFilter?.value as [number, number])?.[0] || 0}</span>
-                  <span>{(currentFilter?.value as [number, number])?.[1] || 100}</span>
-                </div>
-              </div>
-            )}
-            {column.type === 'date' && (
-              <Calendar
-                mode="single"
-                selected={currentFilter?.value as Date ?? null}
-                onSelect={(date) => date && handleFilter(column.key, date, 'date')}
-                initialFocus
-              />
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-    )
-  }
+  }, [])
 
   const renderPaginationButtons = () => {
     const buttons = []
     const maxButtons = 5
-
     let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2))
     const endPage = Math.min(totalPages, startPage + maxButtons - 1)
 
@@ -245,13 +417,14 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
         <Button
           key={i}
           variant={currentPage === i ? "default" : "outline"}
-          onClick={() => paginate(i)}
+          size="sm"
+          onClick={() => setCurrentPage(i)}
+          className={currentPage === i ? 'clay-button' : ''}
         >
           {i}
         </Button>
       )
     }
-
     return buttons
   }
 
@@ -262,175 +435,270 @@ export default function DataPreview({ data, onDataChange }: DataPreviewProps) {
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
-      <div className="glass-card rounded-2xl p-6 border-2">
-        <h2 className="text-3xl font-bold mb-6 gradient-text">Data Preview</h2>
-        <div className="flex flex-wrap gap-3 mb-6">
-          <Input
-            type="text"
-            placeholder="Search visible columns..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full sm:w-auto glass border-primary/30 hover:border-primary transition-all"
-          />
-          <Select onValueChange={(value: string) => setItemsPerPage(parseInt(value))} defaultValue="5">
-            <SelectTrigger className="w-full sm:w-[180px] glass border-primary/30">
-              <SelectValue placeholder="Items per page" />
-            </SelectTrigger>
-            <SelectContent>
-              {[5, 10, 20, 50].map(value => (
-                <SelectItem key={value} value={value.toString()}>{value} per page</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={resetFilters}
-            variant="outline"
-            className="w-full sm:w-auto hover-lift hover:border-primary transition-all"
-            disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
-          >
-            Reset Filters
-            <X className="ml-2 h-4 w-4" />
-          </Button>
-          <Button onClick={exportToExcel} variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">
-            Export
-            <Download className="ml-2 h-4 w-4" />
-          </Button>
-          <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">
-            Import
-            <Upload className="ml-2 h-4 w-4" />
-          </Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={importFromExcel}
-            accept=".xlsx, .xls"
-            style={{ display: 'none' }}
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto hover-lift hover:border-primary transition-all">Customize Columns</Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 glass-card">
-              <div className="grid gap-4">
-                <h4 className="font-semibold text-base">Select visible columns</h4>
-                {columns.map(column => (
-                  <div key={column.key} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={column.key}
-                      checked={visibleColumns.includes(column.key)}
-                      onCheckedChange={() => handleColumnToggle(column.key)}
-                    />
-                    <label htmlFor={column.key} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      {column.key}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="rounded-xl border-2 border-border/50 overflow-hidden glass">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10">
-                {columns.filter(column => visibleColumns.includes(column.key)).map((column) => (
-                  <TableHead key={column.key} className="whitespace-nowrap font-semibold">
-                    <div className="flex items-center">
-                      <span
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => handleSort(column.key)}
-                      >
-                        {column.key}
-                      </span>
-                      <div className="flex ml-2">
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-primary/20 transition-all"
-                          onClick={() => handleSort(column.key)}
-                        >
-                          <ChevronsUpDown className="h-4 w-4" />
-                        </Button>
-                        {renderFilterPopover(column)}
-                      </div>
-                    </div>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentItems.map((item, index) => (
-                <TableRow
-                  key={index}
-                  className="hover:bg-primary/5 transition-colors border-b border-border/30"
-                >
-                  {columns.filter(column => visibleColumns.includes(column.key)).map(column => (
-                    <TableCell key={column.key} className="font-medium">
-                      {column.type === 'date'
-                        ? format(new Date(item[column.key]), 'PP')
-                        : item[column.key]}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-        <div className="flex items-center space-x-2 overflow-x-auto max-w-full">
-          <Button
-            variant="outline"
-            onClick={() => paginate(1)}
-            disabled={currentPage === 1}
-            className="px-2 sm:px-3 hover-lift hover:border-primary"
-          >
-            <ChevronFirst className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-2 sm:px-3 hover-lift hover:border-primary"
-          >
-            Previous
-          </Button>
-          {renderPaginationButtons()}
-          <Button
-            variant="outline"
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-2 sm:px-3 hover-lift hover:border-primary"
-          >
-            Next
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => paginate(totalPages)}
-            disabled={currentPage === totalPages}
-            className="px-2 sm:px-3 hover-lift hover:border-primary"
-          >
-            <ChevronLast className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Go to page:</span>
-          <Input
-            type="number"
-            min={1}
-            max={totalPages}
-            value={currentPage}
-            onChange={(e) => {
-              const page = parseInt(e.target.value)
-              if (page >= 1 && page <= totalPages) {
-                paginate(page)
+      <div className="clay-card rounded-3xl p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold gradient-text">Data Preview</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {filteredAndSortedData.length.toLocaleString()} rows
+              {filteredAndSortedData.length !== data.length &&
+                ` (filtered from ${data.length.toLocaleString()})`
               }
-            }}
-            className="w-16 glass border-primary/30"
-          />
-          <span className="text-sm font-medium">of {totalPages}</span>
+            </p>
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-wrap gap-2">
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="w-48 clay-input"
+            />
+
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={(value) => setItemsPerPage(parseInt(value))}
+            >
+              <SelectTrigger className="w-32 clay-input">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="clay-dropdown">
+                {[10, 25, 50, 100].map(value => (
+                  <SelectItem key={value} value={value.toString()}>
+                    {value} rows
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Column visibility popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="clay-badge hover:shadow-clay">
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Columns
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 clay-dropdown p-4" align="end">
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Visible Columns</h4>
+                  <ScrollArea className="h-64">
+                    <div className="space-y-2 pr-4">
+                      {columns.map(column => {
+                        const Icon = TypeIcon[column.type]
+                        return (
+                          <div
+                            key={column.key}
+                            className="flex items-center gap-3 py-1"
+                          >
+                            <Checkbox
+                              id={column.key}
+                              checked={column.visible}
+                              onCheckedChange={() => handleColumnToggle(column.key)}
+                            />
+                            <Label
+                              htmlFor={column.key}
+                              className="flex items-center gap-2 text-sm cursor-pointer flex-1"
+                            >
+                              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                              {column.label}
+                            </Label>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${column.type === 'number' ? 'badge-number' :
+                                column.type === 'date' ? 'badge-date' :
+                                  column.type === 'boolean' ? 'badge-boolean' :
+                                    'badge-string'
+                                }`}
+                            >
+                              {column.type}
+                            </Badge>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              className="clay-badge hover:shadow-clay"
+              disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="clay-badge hover:shadow-clay"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
+
+        {/* Table */}
+        <div className="clay-inset rounded-2xl overflow-hidden">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div
+              ref={parentRef}
+              className={`overflow-auto ${useVirtualization ? 'h-[500px]' : 'max-h-[600px]'}`}
+            >
+              <table className="w-full border-collapse">
+                <thead className="sticky top-0 z-10 bg-card shadow-sm">
+                  <tr>
+                    <SortableContext
+                      items={visibleColumns.map(col => col.key)}
+                      strategy={horizontalListSortingStrategy}
+                    >
+                      {visibleColumns.map(column => (
+                        <SortableColumnHeader
+                          key={column.key}
+                          column={column}
+                          onSort={() => handleSort(column.key)}
+                          sortConfig={sortConfig}
+                          onFilter={(value) => handleFilter(column.key, value)}
+                          currentFilter={filters[column.key]}
+                          onRename={(newLabel) => handleColumnRename(column.key, newLabel)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </tr>
+                </thead>
+                <tbody>
+                  {useVirtualization ? (
+                    <>
+                      {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                        const row = filteredAndSortedData[virtualRow.index]
+                        return (
+                          <tr
+                            key={virtualRow.index}
+                            className="hover:bg-muted/50 transition-colors border-b border-border/30"
+                            style={{
+                              height: `${virtualRow.size}px`,
+                            }}
+                          >
+                            {visibleColumns.map(column => (
+                              <td
+                                key={column.key}
+                                className="px-4 py-3 text-sm"
+                              >
+                                {formatValue(row[column.key], column.format)}
+                              </td>
+                            ))}
+                          </tr>
+                        )
+                      })}
+                    </>
+                  ) : (
+                    paginatedData.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-muted/50 transition-colors border-b border-border/30"
+                      >
+                        {visibleColumns.map(column => (
+                          <td
+                            key={column.key}
+                            className="px-4 py-3 text-sm"
+                          >
+                            {formatValue(row[column.key], column.format)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </DndContext>
+        </div>
+
+        {/* Pagination */}
+        {!useVirtualization && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="clay-badge"
+              >
+                <ChevronFirst className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => p - 1)}
+                disabled={currentPage === 1}
+                className="clay-badge"
+              >
+                Previous
+              </Button>
+              {renderPaginationButtons()}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => p + 1)}
+                disabled={currentPage === totalPages}
+                className="clay-badge"
+              >
+                Next
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="clay-badge"
+              >
+                <ChevronLast className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Page</span>
+              <Input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={currentPage}
+                onChange={(e) => {
+                  const page = parseInt(e.target.value)
+                  if (page >= 1 && page <= totalPages) {
+                    setCurrentPage(page)
+                  }
+                }}
+                className="w-16 h-8 text-center clay-input"
+              />
+              <span>of {totalPages}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Virtualization notice */}
+        {useVirtualization && (
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            🚀 Virtual scrolling enabled for optimal performance with large datasets
+          </p>
+        )}
       </div>
     </motion.div>
   )
 }
-
