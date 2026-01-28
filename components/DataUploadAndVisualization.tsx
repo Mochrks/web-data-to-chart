@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import FileUploadDropzone from './FileUploadDropzone'
 import DataPreview from './DataPreview'
@@ -8,7 +8,9 @@ import ChartConfigPanel from './ChartConfigPanel'
 import ChartView from './ChartView'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChartBar, ArrowLeft, Sparkles, Table2 } from 'lucide-react'
+import { BiBarChart } from 'react-icons/bi'
+import { FiArrowLeft } from 'react-icons/fi'
+import { BsTable } from 'react-icons/bs'
 import { ColumnSchema, ChartConfig } from '@/lib/data-types'
 
 type ViewState = 'upload' | 'preview' | 'chart'
@@ -19,8 +21,8 @@ export default function DataUploadAndVisualization() {
   const [chartConfig, setChartConfig] = useState<ChartConfig | null>(null)
   const [viewState, setViewState] = useState<ViewState>('upload')
   const [isConfigOpen, setIsConfigOpen] = useState(false)
+  const [showDatasetAlert, setShowDatasetAlert] = useState(false)
 
-  // Handle data upload
   const handleDataUpload = useCallback((
     uploadedData: Record<string, unknown>[],
     uploadedSchema: ColumnSchema[]
@@ -29,35 +31,41 @@ export default function DataUploadAndVisualization() {
     setSchema(uploadedSchema)
     setChartConfig(null)
     setViewState('preview')
+    setShowDatasetAlert(true)
   }, [])
 
-  // Handle schema changes from DataPreview
+  useEffect(() => {
+    if (showDatasetAlert) {
+      const timer = setTimeout(() => {
+        setShowDatasetAlert(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showDatasetAlert])
+
   const handleSchemaChange = useCallback((newSchema: ColumnSchema[]) => {
     setSchema(newSchema)
   }, [])
 
-  // Handle chart configuration completion
   const handleChartConfig = useCallback((config: ChartConfig) => {
     setChartConfig(config)
     setViewState('chart')
   }, [])
 
-  // Reset to upload state
   const handleReset = useCallback(() => {
     setData([])
     setSchema([])
     setChartConfig(null)
     setViewState('upload')
+    setShowDatasetAlert(false)
   }, [])
 
-  // Go back to preview
   const handleBackToPreview = useCallback(() => {
     setViewState('preview')
   }, [])
 
   return (
     <div className="space-y-6">
-      {/* Navigation breadcrumb */}
       {viewState !== 'upload' && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -65,7 +73,6 @@ export default function DataUploadAndVisualization() {
           className="flex items-center gap-4"
         >
           <div className="flex items-center gap-2">
-            {/* Step indicators */}
             <Badge
               variant={viewState === 'preview' || viewState === 'chart' ? 'default' : 'outline'}
               className={viewState === 'preview' || viewState === 'chart' ? 'clay-button' : 'clay-badge'}
@@ -90,14 +97,13 @@ export default function DataUploadAndVisualization() {
 
           <div className="flex-1" />
 
-          {/* Quick actions */}
           {viewState === 'chart' && (
             <Button
               variant="outline"
               onClick={handleBackToPreview}
-              className="clay-badge"
+              className="clay-badge hover:bg-muted/50 transition-colors"
             >
-              <Table2 className="h-4 w-4 mr-2" />
+              <BsTable className="h-4 w-4 mr-2" />
               Back to Data
             </Button>
           )}
@@ -105,17 +111,15 @@ export default function DataUploadAndVisualization() {
           <Button
             variant="outline"
             onClick={handleReset}
-            className="clay-badge"
+            className="clay-badge hover:bg-muted/50 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <FiArrowLeft className="h-4 w-4 mr-2" />
             New Upload
           </Button>
         </motion.div>
       )}
 
-      {/* Main content */}
       <AnimatePresence mode="wait">
-        {/* Upload State */}
         {viewState === 'upload' && (
           <motion.div
             key="upload"
@@ -128,7 +132,6 @@ export default function DataUploadAndVisualization() {
           </motion.div>
         )}
 
-        {/* Preview State */}
         {viewState === 'preview' && (
           <motion.div
             key="preview"
@@ -144,24 +147,21 @@ export default function DataUploadAndVisualization() {
               onSchemaChange={handleSchemaChange}
             />
 
-            {/* Convert to Chart CTA */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
               className="flex justify-center"
             >
               <Button
                 onClick={() => setIsConfigOpen(true)}
-                className="clay-button text-lg px-8 py-6 h-auto"
+                className="clay-button text-lg px-8 py-6 h-auto hover:bg-primary/90 transition-colors"
               >
-                <Sparkles className="h-5 w-5 mr-2 animate-pulse" />
+                <BiBarChart className="h-5 w-5 mr-2" />
                 Convert to Chart
-                <ChartBar className="h-5 w-5 ml-2" />
               </Button>
             </motion.div>
 
-            {/* Chart Configuration Panel */}
             <ChartConfigPanel
               schema={schema}
               onConfigComplete={handleChartConfig}
@@ -171,7 +171,6 @@ export default function DataUploadAndVisualization() {
           </motion.div>
         )}
 
-        {/* Chart State */}
         {viewState === 'chart' && chartConfig && (
           <motion.div
             key="chart"
@@ -187,7 +186,6 @@ export default function DataUploadAndVisualization() {
               schema={schema}
             />
 
-            {/* Actions */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -197,22 +195,21 @@ export default function DataUploadAndVisualization() {
               <Button
                 variant="outline"
                 onClick={() => setIsConfigOpen(true)}
-                className="clay-badge"
+                className="clay-badge hover:bg-muted/50 transition-colors"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
+                <BiBarChart className="h-4 w-4 mr-2" />
                 Change Chart Type
               </Button>
               <Button
                 variant="outline"
                 onClick={handleBackToPreview}
-                className="clay-badge"
+                className="clay-badge hover:bg-muted/50 transition-colors"
               >
-                <Table2 className="h-4 w-4 mr-2" />
+                <BsTable className="h-4 w-4 mr-2" />
                 View Data Table
               </Button>
             </motion.div>
 
-            {/* Chart Configuration Panel (for changing chart) */}
             <ChartConfigPanel
               schema={schema}
               onConfigComplete={handleChartConfig}
@@ -223,26 +220,28 @@ export default function DataUploadAndVisualization() {
         )}
       </AnimatePresence>
 
-      {/* Data summary (when data is loaded) */}
-      {data.length > 0 && viewState !== 'upload' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed bottom-6 left-6 clay-card p-4 rounded-2xl shadow-clay-lg max-w-xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="clay-inset p-2 rounded-xl">
-              <ChartBar className="h-5 w-5 text-primary" />
+      <AnimatePresence>
+        {showDatasetAlert && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="fixed bottom-6 left-6 clay-card p-4 rounded-2xl shadow-clay-lg max-w-xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="clay-inset p-2 rounded-xl">
+                <BiBarChart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Dataset Loaded</p>
+                <p className="text-xs text-muted-foreground">
+                  {data.length.toLocaleString()} rows × {schema.length} columns
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium">Dataset Loaded</p>
-              <p className="text-xs text-muted-foreground">
-                {data.length.toLocaleString()} rows × {schema.length} columns
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

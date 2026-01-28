@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   DndContext,
   closestCenter,
@@ -35,22 +34,18 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
 import {
-  ChevronFirst,
-  ChevronLast,
-  ChevronsUpDown,
-  Filter,
-  X,
-  Download,
-  Settings2,
-  GripVertical,
-
-  Hash,
-  Type,
-  Calendar,
-  ToggleLeft,
-  Pencil,
-  Check,
-} from 'lucide-react'
+  FiChevronsLeft,
+  FiChevronsRight,
+  FiFilter,
+  FiX,
+  FiDownload,
+  FiSettings,
+  FiEdit2,
+  FiCheck,
+} from 'react-icons/fi'
+import { BiSortAlt2 } from 'react-icons/bi'
+import { RiDraggable, RiHashtag } from 'react-icons/ri'
+import { IoTextOutline, IoCalendarOutline, IoToggleOutline } from 'react-icons/io5'
 import { ColumnSchema, formatValue, DataType } from '@/lib/data-types'
 import { downloadCSV } from '@/lib/csv-parser'
 
@@ -67,13 +62,12 @@ type FilterType = {
   }
 }
 
-// Type icon mapping
-const TypeIcon: Record<DataType, typeof Hash> = {
-  'number': Hash,
-  'string': Type,
-  'date': Calendar,
-  'boolean': ToggleLeft,
-  'unknown': Type,
+const TypeIcon: Record<DataType, React.ComponentType<{ className?: string }>> = {
+  'number': RiHashtag,
+  'string': IoTextOutline,
+  'date': IoCalendarOutline,
+  'boolean': IoToggleOutline,
+  'unknown': IoTextOutline,
 }
 
 // Sortable column header component
@@ -143,7 +137,7 @@ function SortableColumnHeader({
           {...listeners}
           className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
         >
-          <GripVertical className="h-4 w-4" />
+          <RiDraggable className="h-4 w-4" />
         </button>
 
         {/* Column name (editable) */}
@@ -170,7 +164,7 @@ function SortableColumnHeader({
                 onClick={handleSaveRename}
                 className="text-primary hover:text-primary/80"
               >
-                <Check className="h-3.5 w-3.5" />
+                <FiCheck className="h-3.5 w-3.5" />
               </button>
             </div>
           ) : (
@@ -188,7 +182,7 @@ function SortableColumnHeader({
               onClick={() => setIsEditing(true)}
               className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             >
-              <Pencil className="h-3 w-3" />
+              <FiEdit2 className="h-3 w-3" />
             </button>
           )}
         </div>
@@ -200,7 +194,7 @@ function SortableColumnHeader({
             className={`p-1 rounded hover:bg-muted transition-colors
               ${isSorted ? 'text-primary' : 'text-muted-foreground'}`}
           >
-            <ChevronsUpDown className="h-4 w-4" />
+            <BiSortAlt2 className="h-4 w-4" />
           </button>
 
           <Popover>
@@ -209,7 +203,7 @@ function SortableColumnHeader({
                 className={`p-1 rounded hover:bg-muted transition-colors
                   ${currentFilter ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                <Filter className="h-4 w-4" />
+                <FiFilter className="h-4 w-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-64 clay-dropdown p-4">
@@ -237,8 +231,6 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
   const [filters, setFilters] = useState<FilterType>({})
-  const [useVirtualization] = useState(data.length > 500)
-
   const parentRef = useRef<HTMLDivElement>(null)
 
   // Update columns when schema changes
@@ -320,18 +312,12 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage)
   const paginatedData = useMemo(() => {
-    if (useVirtualization) return filteredAndSortedData
     const start = (currentPage - 1) * itemsPerPage
     return filteredAndSortedData.slice(start, start + itemsPerPage)
-  }, [filteredAndSortedData, currentPage, itemsPerPage, useVirtualization])
+  }, [filteredAndSortedData, currentPage, itemsPerPage])
 
-  // Virtualizer for large datasets
-  const rowVirtualizer = useVirtualizer({
-    count: filteredAndSortedData.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 48,
-    overscan: 10,
-  })
+  // parentRef is used for scroll container reference
+  const _ = parentRef // Keep ref for potential future use
 
   // Handlers
   const handleSort = useCallback((key: string) => {
@@ -439,7 +425,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold gradient-text">Data Preview</h2>
+            <h2 className="text-2xl font-bold text-primary">Data Preview</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {filteredAndSortedData.length.toLocaleString()} rows
               {filteredAndSortedData.length !== data.length &&
@@ -481,7 +467,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="clay-badge hover:shadow-clay">
-                  <Settings2 className="h-4 w-4 mr-2" />
+                  <FiSettings className="h-4 w-4 mr-2" />
                   Columns
                 </Button>
               </PopoverTrigger>
@@ -534,7 +520,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
               className="clay-badge hover:shadow-clay"
               disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
             >
-              <X className="h-4 w-4 mr-2" />
+              <FiX className="h-4 w-4 mr-2" />
               Reset
             </Button>
 
@@ -543,7 +529,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
               onClick={handleExport}
               className="clay-badge hover:shadow-clay"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <FiDownload className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
@@ -558,7 +544,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
           >
             <div
               ref={parentRef}
-              className={`overflow-auto ${useVirtualization ? 'h-[500px]' : 'max-h-[600px]'}`}
+              className="overflow-auto max-h-[500px]"
             >
               <table className="w-full border-collapse">
                 <thead className="sticky top-0 z-10 bg-card shadow-sm">
@@ -582,47 +568,21 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
                   </tr>
                 </thead>
                 <tbody>
-                  {useVirtualization ? (
-                    <>
-                      {rowVirtualizer.getVirtualItems().map(virtualRow => {
-                        const row = filteredAndSortedData[virtualRow.index]
-                        return (
-                          <tr
-                            key={virtualRow.index}
-                            className="hover:bg-muted/50 transition-colors border-b border-border/30"
-                            style={{
-                              height: `${virtualRow.size}px`,
-                            }}
-                          >
-                            {visibleColumns.map(column => (
-                              <td
-                                key={column.key}
-                                className="px-4 py-3 text-sm"
-                              >
-                                {formatValue(row[column.key], column.format)}
-                              </td>
-                            ))}
-                          </tr>
-                        )
-                      })}
-                    </>
-                  ) : (
-                    paginatedData.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        className="hover:bg-muted/50 transition-colors border-b border-border/30"
-                      >
-                        {visibleColumns.map(column => (
-                          <td
-                            key={column.key}
-                            className="px-4 py-3 text-sm"
-                          >
-                            {formatValue(row[column.key], column.format)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
+                  {paginatedData.map((row, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-muted/50 transition-colors border-b border-border/30"
+                    >
+                      {visibleColumns.map(column => (
+                        <td
+                          key={column.key}
+                          className="px-4 py-3 text-sm"
+                        >
+                          {formatValue(row[column.key], column.format)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -630,7 +590,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
         </div>
 
         {/* Pagination */}
-        {!useVirtualization && totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
             <div className="flex items-center gap-2">
               <Button
@@ -640,7 +600,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
                 disabled={currentPage === 1}
                 className="clay-badge"
               >
-                <ChevronFirst className="h-4 w-4" />
+                <FiChevronsLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
@@ -668,7 +628,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
                 disabled={currentPage === totalPages}
                 className="clay-badge"
               >
-                <ChevronLast className="h-4 w-4" />
+                <FiChevronsRight className="h-4 w-4" />
               </Button>
             </div>
 
@@ -692,12 +652,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
           </div>
         )}
 
-        {/* Virtualization notice */}
-        {useVirtualization && (
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            🚀 Virtual scrolling enabled for optimal performance with large datasets
-          </p>
-        )}
+
       </div>
     </motion.div>
   )

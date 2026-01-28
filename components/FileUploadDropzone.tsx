@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Cloud, FileSpreadsheet, Loader2, Upload, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { FiCloud, FiUpload, FiAlertCircle, FiCheckCircle, FiLoader, FiFile } from 'react-icons/fi'
 import { parseCSV } from '@/lib/csv-parser'
 import { ColumnSchema } from '@/lib/data-types'
 import { Progress } from '@/components/ui/progress'
@@ -57,7 +57,6 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
         rowCount: result.totalRows,
       })
 
-      // Pass data and schema to parent after a brief delay for UX
       setTimeout(() => {
         onDataUpload(result.data, result.schema)
       }, 500)
@@ -129,42 +128,33 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
                       transition={{ duration: 0.6, repeat: Infinity }}
                     >
                       <div className="relative">
-                        <Cloud className="h-20 w-20 text-primary" />
+                        <FiCloud className="h-20 w-20 text-primary" />
                         <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl" />
                       </div>
                     </motion.div>
                   ) : (
-                    <motion.div
-                      className="relative"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
+                    <div className="relative">
                       <div className="clay-inset p-6 rounded-full">
-                        <Upload className="h-16 w-16 text-primary animate-bounce-soft" />
+                        <FiUpload className="h-16 w-16 text-primary" />
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold mb-3 gradient-text">
+                  <h3 className="text-2xl font-bold mb-3 text-primary">
                     {isDragActive ? 'Drop your file here' : 'Drag & drop your data file'}
                   </h3>
                   <p className="text-muted-foreground">
                     Supports CSV and Excel files (.csv, .xlsx, .xls)
                   </p>
                   {!isDragActive && (
-                    <motion.p
-                      className="text-sm text-primary font-medium mt-4"
-                      animate={{ opacity: [0.6, 1, 0.6] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
+                    <p className="text-sm text-primary font-medium mt-4">
                       or click to browse files
-                    </motion.p>
+                    </p>
                   )}
                 </div>
 
-                {/* File type badges */}
                 <div className="flex justify-center gap-3 mt-4">
                   {['.CSV', '.XLSX', '.XLS'].map((ext) => (
                     <span
@@ -189,7 +179,7 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
               >
                 <div className="flex justify-center">
                   <div className="clay-inset p-6 rounded-full">
-                    <Loader2 className="h-14 w-14 text-primary animate-spin" />
+                    <FiLoader className="h-14 w-14 text-primary animate-spin" />
                   </div>
                 </div>
 
@@ -225,7 +215,7 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
                     transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
                   >
                     <div className="clay-badge p-4 rounded-full bg-green-100 dark:bg-green-900/30">
-                      <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+                      <FiCheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
                     </div>
                   </motion.div>
                 </div>
@@ -235,7 +225,7 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
                     {uploadState.message}
                   </h3>
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <FileSpreadsheet className="h-4 w-4" />
+                    <FiFile className="h-4 w-4" />
                     <span>{uploadState.fileName}</span>
                   </div>
                 </div>
@@ -253,7 +243,7 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
               >
                 <div className="flex justify-center">
                   <div className="clay-badge p-4 rounded-full bg-red-100 dark:bg-red-900/30">
-                    <AlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
+                    <FiAlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
                   </div>
                 </div>
 
@@ -269,7 +259,7 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
                       e.stopPropagation()
                       resetUpload()
                     }}
-                    className="clay-button text-sm"
+                    className="clay-button text-sm hover:bg-primary/90 transition-colors"
                   >
                     Try Again
                   </button>
@@ -279,7 +269,6 @@ export default function FileUploadDropzone({ onDataUpload }: FileUploadDropzoneP
           </AnimatePresence>
         </div>
 
-        {/* Performance hint for large files */}
         <p className="text-center text-xs text-muted-foreground mt-4">
           💡 Optimized for large datasets (10k-100k+ rows) with streaming processing
         </p>

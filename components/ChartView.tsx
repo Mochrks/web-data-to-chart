@@ -522,7 +522,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
           <div className="flex items-center gap-3">
             <span className="text-3xl">{chartInfo?.icon}</span>
             <div>
-              <h2 className="text-2xl font-bold gradient-text">{chartInfo?.label}</h2>
+              <h2 className="text-2xl font-bold text-primary">{chartInfo?.label}</h2>
               <p className="text-sm text-muted-foreground">
                 {chartData.length.toLocaleString()} data points
               </p>
