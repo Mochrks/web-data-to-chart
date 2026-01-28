@@ -41,8 +41,8 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import {
-  Download,
-} from 'lucide-react'
+  FaDownload,
+} from 'react-icons/fa'
 import { ChartConfig, COLOR_SCHEMES, CHART_TYPES, ColumnSchema } from '@/lib/data-types'
 import {
   getChartColors,
@@ -554,7 +554,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="clay-badge">
-                  <Download className="h-4 w-4 mr-2" />
+                  <FaDownload className="h-4 w-4 mr-2" />
                   Export
                 </Button>
               </DropdownMenuTrigger>

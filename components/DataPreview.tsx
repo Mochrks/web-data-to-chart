@@ -317,7 +317,7 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
   }, [filteredAndSortedData, currentPage, itemsPerPage])
 
   // parentRef is used for scroll container reference
-  const _ = parentRef // Keep ref for potential future use
+
 
   // Handlers
   const handleSort = useCallback((key: string) => {

@@ -17,20 +17,22 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-    ChartBar,
-    LineChart,
-    PieChart,
-    AreaChart,
-    Target,
-    Circle,
-    Sparkles,
-    AlertCircle,
-    Check,
-    X,
-    Hash,
-    Type,
-    ChevronUp,
-} from 'lucide-react'
+    FaCheck,
+    FaTimes,
+    FaHashtag,
+    FaFont,
+    FaChevronUp,
+    FaRegLightbulb
+} from 'react-icons/fa'
+
+import {
+    FaChartBar,
+    FaChartLine,
+    FaChartPie,
+    FaChartArea,
+    FaBullseye,
+    FaDotCircle,
+} from 'react-icons/fa'
 import { ColumnSchema, ChartConfig, ChartType, DataType, CHART_TYPES, COLOR_SCHEMES } from '@/lib/data-types'
 import { validateChartConfig } from '@/lib/chart-utils'
 
@@ -42,13 +44,13 @@ interface ChartConfigPanelProps {
 }
 
 // Chart type icons mapping
-const ChartIcons: Partial<Record<ChartType, typeof LineChart>> = {
-    line: LineChart,
-    bar: ChartBar,
-    area: AreaChart,
-    pie: PieChart,
-    radar: Target,
-    scatter: Circle,
+const ChartIcons: Partial<Record<ChartType, typeof FaChartLine>> = {
+    line: FaChartLine,
+    bar: FaChartBar,
+    area: FaChartArea,
+    pie: FaChartPie,
+    radar: FaBullseye,
+    scatter: FaDotCircle,
 }
 
 export default function ChartConfigPanel({
@@ -163,7 +165,7 @@ export default function ChartConfigPanel({
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
-                                <Sparkles className="h-6 w-6" />
+                                <FaRegLightbulb className="h-6 w-6" />
                                 Chart Configuration
                             </h2>
                             <p className="text-sm text-muted-foreground mt-1">
@@ -176,7 +178,7 @@ export default function ChartConfigPanel({
                             onClick={() => onOpenChange(false)}
                             className="rounded-full hover:bg-muted"
                         >
-                            <ChevronUp className="h-5 w-5" />
+                            <FaChevronUp className="h-5 w-5" />
                         </Button>
                     </div>
 
@@ -198,7 +200,7 @@ export default function ChartConfigPanel({
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                                 {CHART_TYPES.map((chart) => {
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                    const _Icon = ChartIcons[chart.type] || ChartBar
+                                    const _Icon = ChartIcons[chart.type] || FaChartBar
                                     const isSelected = selectedType === chart.type
 
                                     return (
@@ -268,9 +270,9 @@ export default function ChartConfigPanel({
                                                 <SelectItem key={col.key} value={col.key}>
                                                     <div className="flex items-center gap-2">
                                                         {col.type === 'number' ? (
-                                                            <Hash className="h-4 w-4 text-blue-500" />
+                                                            <FaHashtag className="h-4 w-4 text-blue-500" />
                                                         ) : (
-                                                            <Type className="h-4 w-4 text-green-500" />
+                                                            <FaFont className="h-4 w-4 text-green-500" />
                                                         )}
                                                         {col.label}
                                                         <Badge variant="outline" className="text-xs ml-auto">
@@ -311,7 +313,7 @@ export default function ChartConfigPanel({
                                                             htmlFor={`y-${col.key}`}
                                                             className="flex items-center gap-2 cursor-pointer flex-1"
                                                         >
-                                                            <Hash className="h-4 w-4 text-blue-500" />
+                                                            <FaHashtag className="h-4 w-4 text-blue-500" />
                                                             {col.label}
                                                         </Label>
                                                         {yAxes.includes(col.key) && (
@@ -323,7 +325,7 @@ export default function ChartConfigPanel({
                                                 ))
                                             ) : (
                                                 <div className="text-center py-8 text-muted-foreground">
-                                                    <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                                                    <FaRegLightbulb className="h-8 w-8 mx-auto mb-2" />
                                                     <p>No numeric columns found in your data</p>
                                                 </div>
                                             )}
@@ -345,7 +347,7 @@ export default function ChartConfigPanel({
                                                             onClick={() => handleYAxisToggle(y)}
                                                             className="ml-2 hover:text-destructive"
                                                         >
-                                                            <X className="h-3 w-3" />
+                                                            <FaTimes className="h-3 w-3" />
                                                         </button>
                                                     </Badge>
                                                 )
@@ -366,7 +368,7 @@ export default function ChartConfigPanel({
                                     >
                                         {validation.errors.map((error, idx) => (
                                             <p key={idx} className="text-sm text-destructive flex items-center gap-2">
-                                                <AlertCircle className="h-4 w-4" />
+                                                <FaRegLightbulb className="h-4 w-4" />
                                                 {error}
                                             </p>
                                         ))}
@@ -463,7 +465,8 @@ export default function ChartConfigPanel({
                                 disabled={!validation.valid}
                                 className="clay-button"
                             >
-                                <Check className="h-4 w-4 mr-2" />
+
+                                <FaCheck className="h-4 w-4 mr-2" />
                                 Create Chart
                             </Button>
                         </div>
