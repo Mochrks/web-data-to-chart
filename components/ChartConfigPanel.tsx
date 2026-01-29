@@ -156,10 +156,6 @@ export default function ChartConfigPanel({
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
                 className="fixed inset-0 z-50 bg-[#f3f4f8] overflow-y-auto font-sans text-[#1F2937]"
             >
                 <div className="min-h-screen p-4 md:p-8 flex flex-col gap-6 max-w-[1600px] mx-auto">
@@ -186,7 +182,6 @@ export default function ChartConfigPanel({
                             <section>
                                 <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2 mb-2">
                                     Configure Your Chart
-                                    <span className="text-2xl">💡</span>
                                 </h1>
                                 <p className="text-gray-500 font-medium">
                                     Customise data mapping and appearance options

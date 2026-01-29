@@ -69,7 +69,7 @@ function CustomTooltip({ active, payload, label }: {
   if (!active || !payload?.length) return null
 
   return (
-    <div className="clay-dropdown p-3 rounded-xl shadow-clay-lg">
+    <div className="clay-dropdown p-3 rounded-xl shadow-clay-lg text-black font-bold">
       <p className="font-medium text-sm mb-2">{label}</p>
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center gap-2 text-sm">
@@ -78,7 +78,7 @@ function CustomTooltip({ active, payload, label }: {
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-medium">
+          <span className="font-bold">
             {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </span>
         </div>
