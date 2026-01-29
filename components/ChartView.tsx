@@ -532,7 +532,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
           {/* Controls */}
           <div className="flex flex-wrap gap-2">
             <div className="flex items-center gap-2 clay-badge px-3 py-1">
-              <Label htmlFor="legend-toggle" className="text-sm">Legend</Label>
+              <Label htmlFor="legend-toggle" className="text-sm text-black">Legend</Label>
               <Switch
                 id="legend-toggle"
                 checked={showLegend}
@@ -542,7 +542,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
 
             {['line', 'bar', 'area'].includes(config.type) && (
               <div className="flex items-center gap-2 clay-badge px-3 py-1">
-                <Label htmlFor="brush-toggle" className="text-sm">Brush</Label>
+                <Label htmlFor="brush-toggle" className="text-sm text-black">Brush</Label>
                 <Switch
                   id="brush-toggle"
                   checked={enableBrush}
@@ -553,7 +553,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="clay-badge">
+                <Button variant="outline" className="clay-badge text-black hover:bg-white/50 transition-colors border-none">
                   <FaDownload className="h-4 w-4 mr-2" />
                   Export
                 </Button>

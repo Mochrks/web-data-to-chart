@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { ThemeProvider } from "@/theme/theme-provider"
 import { Inter } from 'next/font/google'
 import '@/app/globals.css'
+import { DataProvider } from '@/components/DataContext'
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,18 +22,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <head>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+      </head>
+      <body className={`${inter.className} overflow-x-hidden`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col min-h-screen">
-            <main className="flex-grow container mx-auto ">
-              {children}
-            </main>
-          </div>
+          <DataProvider>
+            <div className="flex flex-col min-h-screen">
+              <main className="flex-grow">
+                {children}
+              </main>
+            </div>
+          </DataProvider>
         </ThemeProvider>
       </body>
     </html>

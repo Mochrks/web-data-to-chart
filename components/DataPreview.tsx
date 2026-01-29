@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+
 import {
   DndContext,
   closestCenter,
@@ -27,32 +27,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
-import {
-  FiChevronsLeft,
-  FiChevronsRight,
-  FiFilter,
-  FiX,
-  FiDownload,
-  FiSettings,
-  FiEdit2,
-  FiCheck,
-} from 'react-icons/fi'
-import { BiSortAlt2 } from 'react-icons/bi'
-import { RiDraggable, RiHashtag } from 'react-icons/ri'
-import { IoTextOutline, IoCalendarOutline, IoToggleOutline } from 'react-icons/io5'
-import { ColumnSchema, formatValue, DataType } from '@/lib/data-types'
+
+// React Icons
+import { FiEdit2, FiCheck, FiFilter } from 'react-icons/fi'
+import { RiDraggable } from 'react-icons/ri'
+
+import { ColumnSchema, formatValue } from '@/lib/data-types'
 import { downloadCSV } from '@/lib/csv-parser'
+import AppHeader from '@/components/AppHeader'
 
 interface DataPreviewProps {
   data: Record<string, unknown>[]
   schema: ColumnSchema[]
   onSchemaChange?: (schema: ColumnSchema[]) => void
+  onContinue: () => void
 }
 
 type FilterType = {
@@ -62,15 +56,33 @@ type FilterType = {
   }
 }
 
-const TypeIcon: Record<DataType, React.ComponentType<{ className?: string }>> = {
-  'number': RiHashtag,
-  'string': IoTextOutline,
-  'date': IoCalendarOutline,
-  'boolean': IoToggleOutline,
-  'unknown': IoTextOutline,
+// Stats helper
+function calculateStats(data: Record<string, unknown>[], schema: ColumnSchema[]) {
+  if (!data.length) return { missingValues: 0, healthScore: 0, missingDetected: false }
+
+  let missingCount = 0
+  const totalCells = data.length * schema.length
+
+  data.forEach(row => {
+    schema.forEach(col => {
+      const val = row[col.key]
+      if (val === null || val === undefined || val === '') {
+        missingCount++
+      }
+    })
+  })
+
+  const healthScore = Math.max(0, Math.round(((totalCells - missingCount) / totalCells) * 100))
+
+  return {
+    missingValues: missingCount,
+    healthScore,
+    missingDetected: missingCount > 0
+  }
 }
 
-// Sortable column header component
+
+// Sortable column header component adapted for the New Design
 function SortableColumnHeader({
   column,
   onSort,
@@ -106,7 +118,6 @@ function SortableColumnHeader({
     opacity: isDragging ? 0.8 : 1,
   }
 
-  const TypeIconComponent = TypeIcon[column.type]
   const isSorted = sortConfig?.key === column.key
 
   useEffect(() => {
@@ -127,23 +138,21 @@ function SortableColumnHeader({
     <th
       ref={setNodeRef}
       style={style}
-      className={`sticky top-0 bg-card px-4 py-3 text-left font-semibold border-b-2 border-border/50
-        ${isDragging ? 'shadow-clay-lg' : ''}`}
+      className={`py-4 px-4 whitespace-nowrap text-xs font-bold text-gray-700 uppercase tracking-wider relative group
+        ${isDragging ? 'bg-purple-50' : ''}`}
     >
       <div className="flex items-center gap-2">
-        {/* Drag handle */}
-        <button
+        {/* Drag Handle */}
+        <span
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-purple-600 transition-colors"
         >
-          <RiDraggable className="h-4 w-4" />
-        </button>
+          <RiDraggable className="w-4 h-4" />
+        </span>
 
-        {/* Column name (editable) */}
+        {/* Content */}
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <TypeIconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-
           {isEditing ? (
             <div className="flex items-center gap-1">
               <Input
@@ -158,62 +167,48 @@ function SortableColumnHeader({
                     setIsEditing(false)
                   }
                 }}
-                className="h-6 px-1 text-sm w-24"
+                className="h-6 px-1 text-xs w-24 bg-white border-purple-200 text-gray-800"
               />
-              <button
-                onClick={handleSaveRename}
-                className="text-primary hover:text-primary/80"
-              >
-                <FiCheck className="h-3.5 w-3.5" />
+              <button onClick={handleSaveRename} className="text-green-600 hover:text-green-700">
+                <FiCheck className="w-3 h-3" />
               </button>
             </div>
           ) : (
-            <span
-              className="truncate cursor-pointer hover:text-primary transition-colors"
-              onClick={onSort}
-              title={column.label}
-            >
-              {column.label}
-            </span>
-          )}
-
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-            >
-              <FiEdit2 className="h-3 w-3" />
-            </button>
+            <>
+              <span
+                className="cursor-pointer hover:text-purple-600 transition-colors text-gray-700 font-bold"
+                onClick={onSort}
+              >
+                # {column.label}
+              </span>
+              <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-purple-600 transition-opacity">
+                <FiEdit2 className="w-3 h-3" />
+              </button>
+            </>
           )}
         </div>
 
-        {/* Sort and filter buttons */}
-        <div className="flex items-center gap-1">
-          <button
+        {/* Sort/Filter Icons */}
+        <div className="flex items-center gap-1 ml-auto">
+          <i
+            className={`fa-solid fa-sort cursor-pointer transition-colors ${isSorted ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'}`}
             onClick={onSort}
-            className={`p-1 rounded hover:bg-muted transition-colors
-              ${isSorted ? 'text-primary' : 'text-muted-foreground'}`}
-          >
-            <BiSortAlt2 className="h-4 w-4" />
-          </button>
+          ></i>
 
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                className={`p-1 rounded hover:bg-muted transition-colors
-                  ${currentFilter ? 'text-primary' : 'text-muted-foreground'}`}
-              >
-                <FiFilter className="h-4 w-4" />
+              <button className={`transition-colors ${currentFilter ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                <FiFilter className="w-3 h-3" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 clay-dropdown p-4">
+            <PopoverContent className="w-64 p-4 shadow-xl border-purple-100 rounded-2xl">
               <div className="space-y-3">
-                <h4 className="font-medium text-sm">Filter {column.label}</h4>
+                <h4 className="font-medium text-sm text-gray-800">Filter {column.label}</h4>
                 <Input
                   placeholder={`Search ${column.label}...`}
                   value={(typeof currentFilter?.value === 'string' ? currentFilter.value : '') || ''}
                   onChange={(e) => onFilter(e.target.value)}
-                  className="clay-input"
+                  className="bg-gray-50 border-gray-200 focus:border-purple-300 focus:ring-purple-200 rounded-xl text-gray-800 placeholder:text-gray-400"
                 />
               </div>
             </PopoverContent>
@@ -224,7 +219,7 @@ function SortableColumnHeader({
   )
 }
 
-export default function DataPreview({ data, schema, onSchemaChange }: DataPreviewProps) {
+export default function DataPreview({ data, schema, onSchemaChange, onContinue }: DataPreviewProps) {
   const [columns, setColumns] = useState<ColumnSchema[]>(schema)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(25)
@@ -238,13 +233,16 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
     setColumns(schema)
   }, [schema])
 
-  // DnD sensors
+  // DnD sensors with fixed activation constraint
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  // Stats
+  const stats = useMemo(() => calculateStats(data, schema), [data, schema])
 
   // Visible columns only
   const visibleColumns = useMemo(() =>
@@ -316,9 +314,6 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
     return filteredAndSortedData.slice(start, start + itemsPerPage)
   }, [filteredAndSortedData, currentPage, itemsPerPage])
 
-  // parentRef is used for scroll container reference
-
-
   // Handlers
   const handleSort = useCallback((key: string) => {
     setSortConfig(prev => {
@@ -388,73 +383,48 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
     setCurrentPage(1)
   }, [])
 
-  const renderPaginationButtons = () => {
-    const buttons = []
-    const maxButtons = 5
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2))
-    const endPage = Math.min(totalPages, startPage + maxButtons - 1)
-
-    if (endPage - startPage + 1 < maxButtons) {
-      startPage = Math.max(1, endPage - maxButtons + 1)
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <Button
-          key={i}
-          variant={currentPage === i ? "default" : "outline"}
-          size="sm"
-          onClick={() => setCurrentPage(i)}
-          className={currentPage === i ? 'clay-button' : ''}
-        >
-          {i}
-        </Button>
-      )
-    }
-    return buttons
-  }
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-4"
-    >
-      <div className="clay-card rounded-3xl p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-primary">Data Preview</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {filteredAndSortedData.length.toLocaleString()} rows
-              {filteredAndSortedData.length !== data.length &&
-                ` (filtered from ${data.length.toLocaleString()})`
-              }
-            </p>
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8 overflow-x-hidden bg-[#f3f4f8] text-[#1f2937] font-sans w-full pb-32">
+      {/* BEGIN: Header Section - Replaced with AppHeader */}
+      <AppHeader
+        step={2}
+        stats={{
+          rows: data.length,
+          missingValues: stats.missingValues,
+          missingDetected: stats.missingDetected,
+          cols: schema.length,
+          healthScore: stats.healthScore
+        }}
+      />
+      {/* END: Header Section */}
+
+      {/* BEGIN: Main Content Area */}
+      <main className="w-full max-w-6xl glass-panel rounded-[3rem] p-6 md:p-8 mb-10 relative bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_20px_25px_-5px_rgba(0,0,0,0.05),inset_0_0_20px_rgba(255,255,255,0.5)]">
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3 flex-grow max-w-md">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i className="fa-solid fa-magnifying-glass text-gray-400"></i>
+              </div>
+              <input
+                className="block w-full pl-10 pr-3 py-2 border-none rounded-full bg-gray-100/50 text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-purple-300 transition-shadow shadow-inner outline-none"
+                placeholder="Search..."
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
-
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <Input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="w-48 clay-input"
-            />
-
+          <div className="flex items-center gap-3">
             <Select
               value={itemsPerPage.toString()}
               onValueChange={(value) => setItemsPerPage(parseInt(value))}
             >
-              <SelectTrigger className="w-32 clay-input">
+              <SelectTrigger className="bg-gray-100/50 px-4 py-2 rounded-full text-sm font-medium text-gray-600 flex items-center gap-2 hover:bg-gray-200/50 transition border-none shadow-none h-auto w-auto">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="clay-dropdown">
+              <SelectContent>
                 {[10, 25, 50, 100].map(value => (
                   <SelectItem key={value} value={value.toString()}>
                     {value} rows
@@ -463,197 +433,181 @@ export default function DataPreview({ data, schema, onSchemaChange }: DataPrevie
               </SelectContent>
             </Select>
 
-            {/* Column visibility popover */}
+            {/* Column Toggle Popover */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="clay-badge hover:shadow-clay">
-                  <FiSettings className="h-4 w-4 mr-2" />
-                  Columns
-                </Button>
+                <button className="bg-gray-100/50 px-4 py-2 rounded-full text-sm font-medium text-gray-600 flex items-center gap-2 hover:bg-gray-200/50 transition">
+                  Columns <i className="fa-solid fa-chevron-down text-xs"></i>
+                </button>
               </PopoverTrigger>
-              <PopoverContent className="w-72 clay-dropdown p-4" align="end">
+              <PopoverContent className="w-72 p-4 rounded-xl shadow-xl" align="end">
                 <div className="space-y-3">
-                  <h4 className="font-semibold">Visible Columns</h4>
+                  <h4 className="font-semibold text-gray-700">Visible Columns</h4>
                   <ScrollArea className="h-64">
                     <div className="space-y-2 pr-4">
-                      {columns.map(column => {
-                        const Icon = TypeIcon[column.type]
-                        return (
-                          <div
-                            key={column.key}
-                            className="flex items-center gap-3 py-1"
-                          >
-                            <Checkbox
-                              id={column.key}
-                              checked={column.visible}
-                              onCheckedChange={() => handleColumnToggle(column.key)}
-                            />
-                            <Label
-                              htmlFor={column.key}
-                              className="flex items-center gap-2 text-sm cursor-pointer flex-1"
-                            >
-                              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                              {column.label}
-                            </Label>
-                            <Badge
-                              variant="outline"
-                              className={`text-xs ${column.type === 'number' ? 'badge-number' :
-                                column.type === 'date' ? 'badge-date' :
-                                  column.type === 'boolean' ? 'badge-boolean' :
-                                    'badge-string'
-                                }`}
-                            >
-                              {column.type}
-                            </Badge>
-                          </div>
-                        )
-                      })}
+                      {columns.map(column => (
+                        <div key={column.key} className="flex items-center gap-3 py-1">
+                          <Checkbox
+                            id={column.key}
+                            checked={column.visible}
+                            onCheckedChange={() => handleColumnToggle(column.key)}
+                            className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                          />
+                          <Label htmlFor={column.key} className="text-sm cursor-pointer flex-1 font-medium text-gray-600">
+                            {column.label}
+                          </Label>
+                          <Badge variant="outline" className="text-[10px] bg-gray-50 text-gray-400 border-gray-200">
+                            {column.type}
+                          </Badge>
+                        </div>
+                      ))}
                     </div>
                   </ScrollArea>
                 </div>
               </PopoverContent>
             </Popover>
 
-            <Button
-              variant="outline"
+            <button
               onClick={resetFilters}
-              className="clay-badge hover:shadow-clay"
-              disabled={!searchTerm && Object.keys(filters).length === 0 && !sortConfig}
+              className="bg-transparent px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
             >
-              <FiX className="h-4 w-4 mr-2" />
               Reset
-            </Button>
-
-            <Button
-              variant="outline"
+            </button>
+            <button
               onClick={handleExport}
-              className="clay-badge hover:shadow-clay"
+              className="bg-transparent px-4 py-2 text-sm font-medium text-purple-500 hover:text-purple-700 transition flex items-center gap-2"
             >
-              <FiDownload className="h-4 w-4 mr-2" />
+              <i className="fa-solid fa-file-export"></i>
               Export
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="clay-inset rounded-2xl overflow-hidden">
+        {/* Data Table Container */}
+        <div
+          className="w-full overflow-x-auto custom-scroll pb-4 rounded-3xl bg-white/50"
+          style={{ minHeight: "400px" }}
+          ref={parentRef}
+        >
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <div
-              ref={parentRef}
-              className="overflow-auto max-h-[500px]"
+            <table
+              className="w-full text-left border-collapse"
+              style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}
             >
-              <table className="w-full border-collapse">
-                <thead className="sticky top-0 z-10 bg-card shadow-sm">
-                  <tr>
-                    <SortableContext
-                      items={visibleColumns.map(col => col.key)}
-                      strategy={horizontalListSortingStrategy}
-                    >
-                      {visibleColumns.map(column => (
-                        <SortableColumnHeader
-                          key={column.key}
-                          column={column}
-                          onSort={() => handleSort(column.key)}
-                          sortConfig={sortConfig}
-                          onFilter={(value) => handleFilter(column.key, value)}
-                          currentFilter={filters[column.key]}
-                          onRename={(newLabel) => handleColumnRename(column.key, newLabel)}
-                        />
-                      ))}
-                    </SortableContext>
+              {/* Table Head */}
+              <thead>
+                <tr className="thead-gradient border-b border-gray-200">
+                  <SortableContext
+                    items={visibleColumns.map(col => col.key)}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    {visibleColumns.map(column => (
+                      <SortableColumnHeader
+                        key={column.key}
+                        column={column}
+                        onSort={() => handleSort(column.key)}
+                        sortConfig={sortConfig}
+                        onFilter={(value) => handleFilter(column.key, value)}
+                        currentFilter={filters[column.key]}
+                        onRename={(newLabel) => handleColumnRename(column.key, newLabel)}
+                      />
+                    ))}
+                  </SortableContext>
+                </tr>
+              </thead>
+              {/* Table Body */}
+              <tbody className="text-sm text-gray-600 font-medium">
+                {paginatedData.map((row, idx) => (
+                  <tr
+                    key={idx}
+                    className={`hover:bg-purple-50/50 transition-colors ${idx % 2 === 1 ? 'bg-gray-50/30' : ''}`}
+                  >
+                    {visibleColumns.map(column => (
+                      <td key={column.key} className="py-4 px-4 whitespace-nowrap border-b border-gray-100 text-gray-700">
+                        {formatValue(row[column.key], column.format)}
+                      </td>
+                    ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {paginatedData.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-muted/50 transition-colors border-b border-border/30"
-                    >
-                      {visibleColumns.map(column => (
-                        <td
-                          key={column.key}
-                          className="px-4 py-3 text-sm"
-                        >
-                          {formatValue(row[column.key], column.format)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </DndContext>
         </div>
+      </main>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="clay-badge"
-              >
-                <FiChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => p - 1)}
-                disabled={currentPage === 1}
-                className="clay-badge"
-              >
-                Previous
-              </Button>
-              {renderPaginationButtons()}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => p + 1)}
-                disabled={currentPage === totalPages}
-                className="clay-badge"
-              >
-                Next
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="clay-badge"
-              >
-                <FiChevronsRight className="h-4 w-4" />
-              </Button>
-            </div>
+      {/* Footer Control Bar - Fixed at bottom */}
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Page</span>
-              <Input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={currentPage}
-                onChange={(e) => {
-                  const page = parseInt(e.target.value)
-                  if (page >= 1 && page <= totalPages) {
-                    setCurrentPage(page)
-                  }
-                }}
-                className="w-16 h-8 text-center clay-input"
-              />
-              <span>of {totalPages}</span>
+      <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center w-full pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-full border border-white/50 shadow-2xl flex flex-wrap items-center justify-between gap-4 pointer-events-auto max-w-5xl w-full mx-4">
+
+          {/* Pagination */}
+          <div className="px-4 py-2 rounded-full flex items-center gap-4 text-gray-600 text-sm">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="hover:text-purple-600 disabled:opacity-50 transition-colors"
+            >
+              <i className="fa-solid fa-chevron-left text-lg"></i>
+            </button>
+            <div className="flex items-center gap-1">
+              <span className="bg-purple-100 rounded px-2 py-0.5 text-purple-700 font-bold">
+                {currentPage}
+              </span>
+              <span className="text-xs font-medium text-gray-400">/ {totalPages}</span>
             </div>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="hover:text-purple-600 disabled:opacity-50 transition-colors"
+            >
+              <i className="fa-solid fa-chevron-right text-lg"></i>
+            </button>
+
           </div>
-        )}
 
+          {/* Central Action Cluster */}
+          <div className="flex items-center gap-6 px-4 border-l border-r border-gray-200">
+            {/* Circular Progress */}
+            <div className="flex items-center gap-3 hidden sm:flex">
+              <div
+                className="relative w-10 h-10 rounded-full flex items-center justify-center shadow-inner"
+                style={{
+                  background: "conic-gradient(#8b5cf6 66%, #f3f4f6 0)",
+                }}
+              >
+                <div className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-purple-600">2/3</span>
+                </div>
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="text-sm font-bold text-gray-800">Preview</span>
+                <span className="text-[10px] text-gray-500 uppercase tracking-wide">
+                  Step 2
+                </span>
+              </div>
+            </div>
+            {/* Convert Button (Using onContinue) */}
+            <button
+              onClick={onContinue}
+              className="purple-gradient-bg text-white px-8 py-3 rounded-full text-sm font-bold shadow-lg hover:shadow-purple-500/30 hover:scale-105 transition-all duration-200 flex items-center gap-2"
+            >
+              Convert to Chart <i className="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
 
+          {/* Right Side Settings */}
+          <div className="flex gap-4 px-4 min-w-[100px] justify-end">
+            <button className="flex flex-col items-center group text-gray-400 hover:text-purple-600 transition">
+              <i className="fa-regular fa-floppy-disk text-xl mb-0.5"></i>
+              <span className="text-[10px] font-medium">Save</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
