@@ -3,6 +3,7 @@ import { ThemeProvider } from "@/theme/theme-provider"
 import { Inter } from 'next/font/google'
 import '@/app/globals.css'
 import { DataProvider } from '@/components/DataContext'
+import SmoothScroll from "@/components/SmoothScroll"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <DataProvider>
+            <SmoothScroll />
             <div className="flex flex-col min-h-screen">
               <main className="flex-grow">
                 {children}
