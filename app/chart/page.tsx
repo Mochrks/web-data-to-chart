@@ -35,11 +35,11 @@ export default function ChartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f3f4f8] p-4 md:p-8 flex flex-col items-center">
+        <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
             {isLoading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-500"></div>
-                    <p className="ml-4 text-white text-lg">Generating New Chart...</p>
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary border-r-2 border-transparent"></div>
+                    <p className="mt-4 text-foreground text-xs font-bold uppercase tracking-[0.2em]">Processing Request</p>
                 </div>
             )}
 
@@ -47,22 +47,22 @@ export default function ChartPage() {
             <AppHeader
                 step={3}
                 rightAction={
-                    <div className="flex gap-3">
+                    <div className="flex gap-4">
                         <Button
                             variant="outline"
                             onClick={() => router.push('/studio')}
-                            className="clay-badge hover:bg-white/50 transition-colors border-none text-gray-600"
+                            className="bg-muted/20 border border-border/40 rounded-sm text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all h-auto py-1.5 px-4 shadow-none"
                         >
                             <BiBarChart className="h-4 w-4 mr-2" />
-                            Configure
+                            Refine Settings
                         </Button>
                         <Button
                             variant="outline"
                             onClick={() => router.push('/dashboard')}
-                            className="clay-badge hover:bg-white/50 transition-colors border-none text-gray-600"
+                            className="bg-muted/20 border border-border/40 rounded-sm text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all h-auto py-1.5 px-4 shadow-none"
                         >
                             <BsTable className="h-4 w-4 mr-2" />
-                            Data
+                            Back to Data
                         </Button>
                     </div>
                 }
@@ -81,16 +81,19 @@ export default function ChartPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex justify-center gap-4 mt-8"
+                    transition={{ delay: 0.5 }}
+                    className="flex flex-col items-center gap-4 mt-12 pb-20"
                 >
                     <Button
                         variant="default"
                         onClick={handleGenerateNew}
-                        className="purple-gradient-bg text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all rounded-full px-8 py-6"
+                        className="bg-primary text-primary-foreground shadow-sm hover:opacity-90 active:scale-[0.98] transition-all rounded-sm px-10 py-7 text-[10px] font-bold uppercase tracking-[0.2em]"
                     >
-                        Generate New Chart
+                        Create New Exploration
                     </Button>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-medium opacity-60">
+                        Export options are available in the chart header
+                    </p>
                 </motion.div>
             </div>
         </div>

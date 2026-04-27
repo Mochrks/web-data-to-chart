@@ -138,8 +138,8 @@ function SortableColumnHeader({
     <th
       ref={setNodeRef}
       style={style}
-      className={`py-4 px-4 whitespace-nowrap text-xs font-bold text-gray-700 uppercase tracking-wider relative group
-        ${isDragging ? 'bg-purple-50' : ''}`}
+      className={`py-4 px-4 whitespace-nowrap text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] relative group border-b border-border/60 bg-muted/20
+        ${isDragging ? 'bg-primary/5' : ''}`}
     >
       <div className="flex items-center gap-2">
         {/* Drag Handle */}
@@ -176,12 +176,12 @@ function SortableColumnHeader({
           ) : (
             <>
               <span
-                className="cursor-pointer hover:text-purple-600 transition-colors text-gray-700 font-bold"
+                className="cursor-pointer hover:text-primary transition-colors text-foreground font-bold"
                 onClick={onSort}
               >
-                # {column.label}
+                {column.label}
               </span>
-              <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-purple-600 transition-opacity">
+              <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity">
                 <FiEdit2 className="w-3 h-3" />
               </button>
             </>
@@ -201,14 +201,14 @@ function SortableColumnHeader({
                 <FiFilter className="w-3 h-3" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-4 shadow-xl border-purple-100 rounded-2xl">
+            <PopoverContent className="w-64 p-4 shadow-zen border-border rounded-sm">
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-gray-800">Filter {column.label}</h4>
+                <h4 className="font-medium text-xs uppercase tracking-widest text-muted-foreground">Filter {column.label}</h4>
                 <Input
-                  placeholder={`Search ${column.label}...`}
+                  placeholder={`Search...`}
                   value={(typeof currentFilter?.value === 'string' ? currentFilter.value : '') || ''}
                   onChange={(e) => onFilter(e.target.value)}
-                  className="bg-gray-50 border-gray-200 focus:border-purple-300 focus:ring-purple-200 rounded-xl text-gray-800 placeholder:text-gray-400"
+                  className="bg-muted/30 border-border/60 focus:border-primary/40 focus:ring-primary/20 rounded-sm text-foreground placeholder:text-muted-foreground/50"
                 />
               </div>
             </PopoverContent>
@@ -384,7 +384,7 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8 overflow-x-hidden bg-[#f3f4f8] text-[#1f2937] font-sans w-full pb-32">
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8 bg-background text-foreground font-sans w-full pb-32">
       {/* BEGIN: Header Section - Replaced with AppHeader */}
       <AppHeader
         step={2}
@@ -399,7 +399,7 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
       {/* END: Header Section */}
 
       {/* BEGIN: Main Content Area */}
-      <main className="w-full max-w-6xl glass-panel rounded-[3rem] p-6 md:p-8 mb-10 relative bg-white/85 backdrop-blur-md border border-white/80 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_20px_25px_-5px_rgba(0,0,0,0.05),inset_0_0_20px_rgba(255,255,255,0.5)]">
+      <main className="w-full max-w-6xl bg-card border border-border/60 rounded-sm p-6 md:p-8 mb-10 relative shadow-zen">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3 flex-grow max-w-md">
@@ -408,8 +408,8 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
                 <i className="fa-solid fa-magnifying-glass text-gray-400"></i>
               </div>
               <input
-                className="block w-full pl-10 pr-3 py-2 border-none rounded-full bg-gray-100/50 text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-purple-300 transition-shadow shadow-inner outline-none"
-                placeholder="Search..."
+                className="block w-full pl-10 pr-3 py-2 border border-border/60 rounded-sm bg-muted/20 text-foreground placeholder-muted-foreground/60 focus:ring-1 focus:ring-primary/30 transition-all outline-none text-sm"
+                placeholder="Search dataset..."
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -421,7 +421,7 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
               value={itemsPerPage.toString()}
               onValueChange={(value) => setItemsPerPage(parseInt(value))}
             >
-              <SelectTrigger className="bg-gray-100/50 px-4 py-2 rounded-full text-sm font-medium text-gray-600 flex items-center gap-2 hover:bg-gray-200/50 transition border-none shadow-none h-auto w-auto">
+              <SelectTrigger className="bg-muted/20 px-4 py-2 rounded-sm text-xs font-medium text-muted-foreground flex items-center gap-2 hover:bg-muted/40 transition border border-border/60 shadow-none h-auto w-auto uppercase tracking-widest">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -436,13 +436,13 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
             {/* Column Toggle Popover */}
             <Popover>
               <PopoverTrigger asChild>
-                <button className="bg-gray-100/50 px-4 py-2 rounded-full text-sm font-medium text-gray-600 flex items-center gap-2 hover:bg-gray-200/50 transition">
-                  Columns <i className="fa-solid fa-chevron-down text-xs"></i>
+                <button className="bg-muted/20 px-4 py-2 rounded-sm text-xs font-medium text-muted-foreground flex items-center gap-2 hover:bg-muted/40 transition border border-border/60 uppercase tracking-widest">
+                  Columns <i className="fa-solid fa-chevron-down text-[10px]"></i>
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-72 p-4 rounded-xl shadow-xl" align="end">
+              <PopoverContent className="w-72 p-4 rounded-sm shadow-zen border-border" align="end">
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-700">Visible Columns</h4>
+                  <h4 className="font-bold text-xs uppercase tracking-widest text-muted-foreground mb-4">Visible Columns</h4>
                   <ScrollArea className="h-64">
                     <div className="space-y-2 pr-4">
                       {columns.map(column => (
@@ -451,12 +451,12 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
                             id={column.key}
                             checked={column.visible}
                             onCheckedChange={() => handleColumnToggle(column.key)}
-                            className="border-gray-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                            className="border-border rounded-sm data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                           />
-                          <Label htmlFor={column.key} className="text-sm cursor-pointer flex-1 font-medium text-gray-600">
+                          <Label htmlFor={column.key} className="text-xs cursor-pointer flex-1 font-medium text-foreground tracking-tight">
                             {column.label}
                           </Label>
-                          <Badge variant="outline" className="text-[10px] bg-gray-50 text-gray-400 border-gray-200">
+                          <Badge variant="outline" className="text-[9px] bg-muted/30 text-muted-foreground border-border/40 rounded-sm font-mono">
                             {column.type}
                           </Badge>
                         </div>
@@ -469,13 +469,13 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
 
             <button
               onClick={resetFilters}
-              className="bg-transparent px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition"
             >
               Reset
             </button>
             <button
               onClick={handleExport}
-              className="bg-transparent px-4 py-2 text-sm font-medium text-purple-500 hover:text-purple-700 transition flex items-center gap-2"
+              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition flex items-center gap-2"
             >
               <i className="fa-solid fa-file-export"></i>
               Export
@@ -485,7 +485,7 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
 
         {/* Data Table Container */}
         <div
-          className="w-full overflow-x-auto custom-scroll pb-4 rounded-3xl bg-white/50"
+          className="w-full overflow-x-auto custom-scroll pb-4 rounded-sm bg-card"
           style={{ minHeight: "400px" }}
           ref={parentRef}
         >
@@ -500,7 +500,7 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
             >
               {/* Table Head */}
               <thead>
-                <tr className="thead-gradient border-b border-gray-200">
+                <tr className="border-b border-border/60">
                   <SortableContext
                     items={visibleColumns.map(col => col.key)}
                     strategy={horizontalListSortingStrategy}
@@ -520,14 +520,14 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
                 </tr>
               </thead>
               {/* Table Body */}
-              <tbody className="text-sm text-gray-600 font-medium">
+              <tbody className="text-xs text-muted-foreground font-light tracking-wide">
                 {paginatedData.map((row, idx) => (
                   <tr
                     key={idx}
-                    className={`hover:bg-purple-50/50 transition-colors ${idx % 2 === 1 ? 'bg-gray-50/30' : ''}`}
+                    className={`hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-muted/5' : ''}`}
                   >
                     {visibleColumns.map(column => (
-                      <td key={column.key} className="py-4 px-4 whitespace-nowrap border-b border-gray-100 text-gray-700">
+                      <td key={column.key} className="py-3 px-4 whitespace-nowrap border-b border-border/40 text-foreground">
                         {formatValue(row[column.key], column.format)}
                       </td>
                     ))}
@@ -542,68 +542,56 @@ export default function DataPreview({ data, schema, onSchemaChange, onContinue }
       {/* Footer Control Bar - Fixed at bottom */}
 
       <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center w-full pointer-events-none">
-        <div className="bg-white/90 backdrop-blur-xl p-2 rounded-full border border-white/50 shadow-2xl flex flex-wrap items-center justify-between gap-4 pointer-events-auto max-w-5xl w-full mx-4">
+        <div className="bg-card/90 backdrop-blur-md p-2 rounded-sm border border-border/60 shadow-zen-lg flex flex-wrap items-center justify-between gap-4 pointer-events-auto max-w-5xl w-full mx-4">
 
           {/* Pagination */}
-          <div className="px-4 py-2 rounded-full flex items-center gap-4 text-gray-600 text-sm">
+          <div className="px-4 py-2 flex items-center gap-4 text-muted-foreground text-xs font-bold tracking-widest uppercase">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="hover:text-purple-600 disabled:opacity-50 transition-colors"
+              className="hover:text-primary disabled:opacity-30 transition-colors"
             >
-              <i className="fa-solid fa-chevron-left text-lg"></i>
+              <i className="fa-solid fa-chevron-left"></i>
             </button>
             <div className="flex items-center gap-1">
-              <span className="bg-purple-100 rounded px-2 py-0.5 text-purple-700 font-bold">
+              <span className="bg-primary/10 rounded-sm px-2 py-0.5 text-primary font-bold">
                 {currentPage}
               </span>
-              <span className="text-xs font-medium text-gray-400">/ {totalPages}</span>
+              <span className="text-[10px] font-medium text-muted-foreground/50">/ {totalPages}</span>
             </div>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="hover:text-purple-600 disabled:opacity-50 transition-colors"
+              className="hover:text-primary disabled:opacity-30 transition-colors"
             >
-              <i className="fa-solid fa-chevron-right text-lg"></i>
+              <i className="fa-solid fa-chevron-right"></i>
             </button>
 
           </div>
 
           {/* Central Action Cluster */}
-          <div className="flex items-center gap-6 px-4 border-l border-r border-gray-200">
-            {/* Circular Progress */}
+          <div className="flex items-center gap-6 px-4 border-l border-r border-border/40">
+            {/* Step Indicator */}
             <div className="flex items-center gap-3 hidden sm:flex">
-              <div
-                className="relative w-10 h-10 rounded-full flex items-center justify-center shadow-inner"
-                style={{
-                  background: "conic-gradient(#8b5cf6 66%, #f3f4f6 0)",
-                }}
-              >
-                <div className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-purple-600">2/3</span>
+                <div className="flex flex-col leading-none">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-0.5">Step</span>
+                    <span className="text-xs font-bold text-foreground">02 / 03</span>
                 </div>
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-sm font-bold text-gray-800">Preview</span>
-                <span className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  Step 2
-                </span>
-              </div>
             </div>
             {/* Convert Button (Using onContinue) */}
             <button
               onClick={onContinue}
-              className="purple-gradient-bg text-white px-8 py-3 rounded-full text-sm font-bold shadow-lg hover:shadow-purple-500/30 hover:scale-105 transition-all duration-200 flex items-center gap-2"
+              className="bg-primary text-primary-foreground px-8 py-3 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex items-center gap-3"
             >
-              Convert to Chart <i className="fa-solid fa-arrow-right"></i>
+              Continue to Chart <i className="fa-solid fa-arrow-right text-[10px]"></i>
             </button>
           </div>
 
           {/* Right Side Settings */}
           <div className="flex gap-4 px-4 min-w-[100px] justify-end">
-            <button className="flex flex-col items-center group text-gray-400 hover:text-purple-600 transition">
-              <i className="fa-regular fa-floppy-disk text-xl mb-0.5"></i>
-              <span className="text-[10px] font-medium">Save</span>
+            <button className="flex flex-col items-center group text-muted-foreground hover:text-primary transition">
+              <i className="fa-regular fa-floppy-disk text-lg mb-0.5"></i>
+              <span className="text-[9px] font-bold uppercase tracking-widest">Save</span>
             </button>
           </div>
         </div>

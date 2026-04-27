@@ -156,9 +156,9 @@ export default function ChartConfigPanel({
     return (
         <AnimatePresence>
             <motion.div
-                className="fixed inset-0 z-50 bg-[#f3f4f8] overflow-y-auto font-sans text-[#1F2937]"
+                className="fixed inset-0 z-50 bg-background overflow-y-auto font-sans text-foreground"
             >
-                <div className="min-h-screen p-4 md:p-8 flex flex-col gap-6 max-w-[1600px] mx-auto">
+                <div className="min-h-screen p-4 md:p-8 flex flex-col gap-6 max-w-[1400px] mx-auto">
                     {/* BEGIN: MainHeader - Replaced with AppHeader */}
                     <AppHeader
                         step={3}
@@ -179,45 +179,45 @@ export default function ChartConfigPanel({
                         {/* Centered Configuration Area */}
                         <div className="w-full max-w-5xl flex flex-col gap-6">
                             {/* Title Section */}
-                            <section>
-                                <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2 mb-2">
-                                    Configure Your Chart
+                            <section className="mb-4">
+                                <h1 className="text-2xl font-medium tracking-tight text-foreground mb-2">
+                                    Chart Configuration
                                 </h1>
-                                <p className="text-gray-500 font-medium">
-                                    Customise data mapping and appearance options
+                                <p className="text-muted-foreground text-sm font-light tracking-wide">
+                                    Define the visual mapping and aesthetic parameters
                                 </p>
                             </section>
 
-                            {/* Tabs Navigation */}
-                            <nav className="flex items-center gap-8 border-b border-gray-200">
+                             {/* Tabs Navigation */}
+                            <nav className="flex items-center gap-12 border-b border-border/40">
                                 <button
                                     onClick={() => setActiveTab('type')}
-                                    className={`pb-3 text-base font-medium transition-colors border-b-2 
-                                        ${activeTab === 'type' ? 'text-purple-600 border-purple-600' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+                                    className={`pb-4 text-xs font-bold uppercase tracking-[0.2em] transition-all border-b-2 
+                                        ${activeTab === 'type' ? 'text-primary border-primary' : 'text-muted-foreground border-transparent hover:text-foreground'}`}
                                 >
-                                    1. Chart Type
+                                    01. Type
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('data')}
-                                    className={`pb-3 text-base font-medium transition-colors border-b-2
-                                         ${activeTab === 'data' ? 'text-purple-600 border-purple-600' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+                                    className={`pb-4 text-xs font-bold uppercase tracking-[0.2em] transition-all border-b-2
+                                         ${activeTab === 'data' ? 'text-primary border-primary' : 'text-muted-foreground border-transparent hover:text-foreground'}`}
                                 >
-                                    2. Data Mapping
+                                    02. Mapping
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('options')}
-                                    className={`pb-3 text-base font-medium transition-colors border-b-2
-                                        ${activeTab === 'options' ? 'text-purple-600 border-purple-600' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+                                    className={`pb-4 text-xs font-bold uppercase tracking-[0.2em] transition-all border-b-2
+                                        ${activeTab === 'options' ? 'text-primary border-primary' : 'text-muted-foreground border-transparent hover:text-foreground'}`}
                                 >
-                                    3. Options
+                                    03. Aesthetics
                                 </button>
                             </nav>
 
                             {/* TAB CONTENT AREA */}
-                            <div className="bg-[#F7F5F2] rounded-xl shadow-neumorphic-inset p-6 min-h-[400px]">
+                            <div className="bg-card/50 border border-border/40 rounded-sm p-6 min-h-[400px] shadow-zen-subtle">
                                 {activeTab === 'type' && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                                             {CHART_TYPES.map((chart) => {
                                                 const Icon = ChartIcons[chart.type] || FaChartBar
                                                 const isSelected = selectedType === chart.type
@@ -225,30 +225,28 @@ export default function ChartConfigPanel({
                                                     <div
                                                         key={chart.type}
                                                         onClick={() => setSelectedType(chart.type)}
-                                                        className={`group flex flex-col items-center justify-center p-4 bg-[#F7F5F2] rounded-xl cursor-pointer transition-all active:scale-95 h-32 w-full
-                                                            ${isSelected ? 'shadow-card-selected border-2 border-purple-200' : 'shadow-neumorphic-sm hover:shadow-neumorphic-md'}`}
-                                                        style={isSelected ? { boxShadow: "0 0 0 2px #8B5CF6, 0 0 20px rgba(139, 92, 246, 0.2)" } : {}}
+                                                        className={`group flex flex-col items-center justify-center p-4 rounded-sm cursor-pointer transition-all active:scale-[0.98] h-32 w-full border
+                                                            ${isSelected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-card border-border/40 hover:border-border shadow-zen-subtle'}`}
                                                     >
-                                                        {isSelected && (
-                                                            <div className="absolute top-2 right-2 w-2 h-2 bg-purple-600 rounded-full"></div>
-                                                        )}
-                                                        <Icon className={`w-8 h-8 mb-2 ${isSelected ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                                                        <span className={`text-xs font-semibold ${isSelected ? 'text-purple-600' : 'text-gray-600'}`}>
+                                                        <Icon className={`w-6 h-6 mb-3 transition-colors ${isSelected ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-foreground'}`} />
+                                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
                                                             {chart.label}
                                                         </span>
                                                     </div>
                                                 )
                                             })}
                                         </div>
-                                        {selectedChartInfo && (
-                                            <div className="bg-[#ede9fe] p-4 rounded-xl border border-purple-100 mt-4 flex items-start gap-3">
-                                                <FaRegLightbulb className="text-purple-500 mt-1" />
+                                         {selectedChartInfo && (
+                                            <div className="bg-primary/5 p-4 rounded-sm border border-primary/10 mt-8 flex items-start gap-4">
+                                                <div className="p-2 rounded-sm bg-primary/10 text-primary">
+                                                    <FaRegLightbulb className="w-4 h-4" />
+                                                </div>
                                                 <div>
-                                                    <h4 className="font-bold text-purple-700 text-sm mb-1">{selectedChartInfo.label}</h4>
-                                                    <p className="text-purple-600 text-xs">{selectedChartInfo.description}</p>
-                                                    <div className="flex gap-2 mt-2">
-                                                        {selectedChartInfo.requiresNumericY && <Badge className="bg-white/50 text-purple-700 hover:bg-white/80">Numeric Y-Axis</Badge>}
-                                                        {selectedChartInfo.supportsMultipleY && <Badge className="bg-white/50 text-purple-700 hover:bg-white/80">Multi Y-Axis</Badge>}
+                                                    <h4 className="font-bold text-primary text-[10px] uppercase tracking-widest mb-1">{selectedChartInfo.label}</h4>
+                                                    <p className="text-foreground text-xs font-light leading-relaxed">{selectedChartInfo.description}</p>
+                                                    <div className="flex gap-3 mt-3">
+                                                        {selectedChartInfo.requiresNumericY && <Badge className="bg-background border-primary/20 text-primary text-[9px] uppercase tracking-tighter rounded-sm">Numeric Required</Badge>}
+                                                        {selectedChartInfo.supportsMultipleY && <Badge className="bg-background border-primary/20 text-primary text-[9px] uppercase tracking-tighter rounded-sm">Multi-Series</Badge>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -260,19 +258,19 @@ export default function ChartConfigPanel({
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                             {/* X Axis */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                                    X-Axis (Category)
+                                             <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+                                                    Primary Dimension (X)
                                                 </label>
                                                 <Select value={xAxis} onValueChange={setXAxis}>
-                                                    <SelectTrigger className="w-full bg-[#F7F5F2] shadow-neumorphic-sm border-none p-6 h-auto rounded-xl">
+                                                    <SelectTrigger className="w-full bg-card border border-border/40 p-6 h-auto rounded-sm hover:border-border/80 transition shadow-zen-subtle">
                                                         <SelectValue placeholder="Select X-axis" />
                                                     </SelectTrigger>
-                                                    <SelectContent className="bg-[#F7F5F2] shadow-xl border-none">
+                                                    <SelectContent className="bg-card border border-border/60 rounded-sm shadow-zen">
                                                         {schema.map(col => (
-                                                            <SelectItem key={col.key} value={col.key}>
-                                                                <div className="flex items-center gap-2">
-                                                                    {col.type === 'number' ? <FaHashtag className="text-blue-500" /> : <FaFont className="text-green-500" />}
+                                                            <SelectItem key={col.key} value={col.key} className="text-xs focus:bg-primary/10">
+                                                                <div className="flex items-center gap-3">
+                                                                    {col.type === 'number' ? <FaHashtag className="text-accent/60" /> : <FaFont className="text-primary/60" />}
                                                                     {col.label}
                                                                 </div>
                                                             </SelectItem>
@@ -281,40 +279,40 @@ export default function ChartConfigPanel({
                                                 </Select>
                                             </div>
                                             {/* Y Axis Selection */}
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                                    Y-Axis (Values)
-                                                    {selectedChartInfo?.supportsMultipleY && <span className="text-xs font-normal text-gray-400 ml-2">(Multiple Allowed)</span>}
+                                             <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+                                                    Measure Values (Y)
+                                                    {selectedChartInfo?.supportsMultipleY && <span className="text-[10px] font-normal text-muted-foreground/50 ml-2 italic">(Multiple allowed)</span>}
                                                 </label>
-                                                <div className="w-full bg-[#F7F5F2] shadow-neumorphic-inset rounded-xl p-4 h-64 overflow-y-auto custom-scroll">
+                                                <div className="w-full bg-card border border-border/40 rounded-sm p-4 h-64 overflow-y-auto custom-scroll shadow-zen-subtle">
                                                     {numericColumns.length > 0 ? (
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-1">
                                                             {numericColumns.map(col => {
                                                                 const isChecked = yAxes.includes(col.key);
                                                                 return (
                                                                     <div
                                                                         key={col.key}
                                                                         onClick={() => handleYAxisToggle(col.key)}
-                                                                        className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all
-                                                                            ${isChecked ? 'bg-purple-100 shadow-sm border border-purple-200' : 'hover:bg-gray-100/50'}`}
+                                                                        className={`flex items-center justify-between p-3 rounded-sm cursor-pointer transition-all border
+                                                                            ${isChecked ? 'bg-primary/5 border-primary shadow-sm' : 'border-transparent hover:bg-muted/30'}`}
                                                                     >
                                                                         <div className="flex items-center gap-3">
-                                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${isChecked ? 'bg-purple-600 border-purple-600' : 'border-gray-400'}`}>
-                                                                                {isChecked && <FaCheck className="text-white text-[10px]" />}
+                                                                            <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-colors ${isChecked ? 'bg-primary border-primary' : 'border-border'}`}>
+                                                                                {isChecked && <FaCheck className="text-white text-[8px]" />}
                                                                             </div>
-                                                                            <span className={`text-sm font-medium ${isChecked ? 'text-purple-900' : 'text-gray-600'}`}>
+                                                                            <span className={`text-xs font-medium ${isChecked ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                                                 {col.label}
                                                                             </span>
                                                                         </div>
-                                                                        <Badge variant="outline" className="text-[10px] bg-white text-gray-400">Number</Badge>
+                                                                        <Badge variant="outline" className="text-[9px] bg-muted/20 text-muted-foreground border-border/40 rounded-sm font-mono tracking-tighter">NUM</Badge>
                                                                     </div>
                                                                 )
                                                             })}
                                                         </div>
                                                     ) : (
-                                                        <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                                                            <FaRegLightbulb className="w-6 h-6 mb-2" />
-                                                            <p className="text-xs">No numeric columns available</p>
+                                                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40">
+                                                            <FaRegLightbulb className="w-5 h-5 mb-3" />
+                                                            <p className="text-[10px] uppercase tracking-widest">No measures found</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -322,8 +320,7 @@ export default function ChartConfigPanel({
                                         </div>
                                         {/* Validation Feedback */}
                                         {!validation.valid && validation.errors.length > 0 && (
-                                            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm flex items-center gap-2 border border-red-100">
-                                                <FiX className="w-4 h-4" />
+                                            <div className="bg-destructive/5 text-destructive p-4 rounded-sm text-xs font-medium border border-destructive/20 mt-6">
                                                 {validation.errors[0]}
                                             </div>
                                         )}
@@ -333,40 +330,40 @@ export default function ChartConfigPanel({
                                 {activeTab === 'options' && (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                                         <div className="grid md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-3">Color Scheme</label>
-                                                <div className="grid grid-cols-2 gap-3">
+                                             <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">Palette Selection</label>
+                                                <div className="grid grid-cols-2 gap-4">
                                                     {(Object.keys(COLOR_SCHEMES) as (keyof typeof COLOR_SCHEMES)[]).map(scheme => (
                                                         <div
                                                             key={scheme}
                                                             onClick={() => setColorScheme(scheme)}
-                                                            className={`p-3 rounded-xl cursor-pointer transition-all flex items-center gap-3
-                                                                ${colorScheme === scheme ? 'bg-white shadow-neumorphic-sm border border-gray-100' : 'hover:bg-gray-100/50'}`}
+                                                            className={`p-3 rounded-sm cursor-pointer transition-all flex items-center justify-between border
+                                                                ${colorScheme === scheme ? 'bg-primary/5 border-primary' : 'bg-card border-border/40 hover:border-border shadow-zen-subtle'}`}
                                                         >
-                                                            <div className="flex -space-x-1">
-                                                                {COLOR_SCHEMES[scheme].slice(0, 3).map((c, i) => (
-                                                                    <div key={i} className="w-4 h-4 rounded-full ring-1 ring-white" style={{ backgroundColor: c }} />
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">{scheme}</span>
+                                                            <div className="flex -space-x-1.5">
+                                                                {COLOR_SCHEMES[scheme].slice(0, 4).map((c, i) => (
+                                                                    <div key={i} className="w-4 h-4 rounded-full border border-background shadow-sm" style={{ backgroundColor: c }} />
                                                                 ))}
                                                             </div>
-                                                            <span className="text-sm font-medium capitalize text-gray-600">{scheme}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                             <div className="space-y-4">
+                                                <div className="flex items-center justify-between p-4 bg-card border border-border/40 rounded-sm shadow-zen-subtle">
                                                     <div>
-                                                        <span className="block font-medium text-gray-700">Show Legend</span>
-                                                        <span className="text-xs text-gray-400">Display labels for datasets</span>
+                                                        <span className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Legend Display</span>
+                                                        <span className="text-[10px] text-muted-foreground font-light tracking-wide">Toggle series identifiers</span>
                                                     </div>
-                                                    <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                                                    <Switch checked={showLegend} onCheckedChange={setShowLegend} className="data-[state=checked]:bg-primary" />
                                                 </div>
-                                                <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                                <div className="flex items-center justify-between p-4 bg-card border border-border/40 rounded-sm shadow-zen-subtle">
                                                     <div>
-                                                        <span className="block font-medium text-gray-700">Enable Zoom</span>
-                                                        <span className="text-xs text-gray-400">Interact with the chart</span>
+                                                        <span className="block text-xs font-bold uppercase tracking-widest text-foreground mb-1">Enable Interaction</span>
+                                                        <span className="text-[10px] text-muted-foreground font-light tracking-wide">Allow zooming and panning</span>
                                                     </div>
-                                                    <Switch checked={enableZoom} onCheckedChange={setEnableZoom} />
+                                                    <Switch checked={enableZoom} onCheckedChange={setEnableZoom} className="data-[state=checked]:bg-primary" />
                                                 </div>
                                             </div>
                                         </div>
@@ -379,22 +376,22 @@ export default function ChartConfigPanel({
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={handleReset}
-                                        className="px-6 py-3 bg-[#F7F5F2] rounded-xl shadow-neumorphic-sm hover:shadow-neumorphic-md transition-shadow text-sm font-semibold text-gray-600 active:shadow-neumorphic-inset"
+                                        className="px-6 py-3 bg-card border border-border/60 rounded-sm shadow-sm hover:bg-muted/20 transition-all text-[10px] font-bold uppercase tracking-widest text-muted-foreground active:scale-95"
                                     >
-                                        Reset
+                                        Reset Settings
                                     </button>
-                                    <button
+                                     <button
                                         onClick={handleComplete}
                                         disabled={!validation.valid || isGenerating}
-                                        className="px-8 py-3 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] text-white rounded-xl shadow-lg shadow-purple-200 font-bold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="px-8 py-3 bg-primary text-primary-foreground rounded-sm shadow-sm font-bold text-[10px] uppercase tracking-[0.2em] transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3"
                                     >
                                         {isGenerating ? (
                                             <>
-                                                <FaSpinner className="animate-spin" /> Generating...
+                                                <FaSpinner className="animate-spin text-[10px]" /> PROCESSING...
                                             </>
                                         ) : (
                                             <>
-                                                Create Chart <FaCheck />
+                                                GENERATE VISUAL <FaCheck className="text-[10px]" />
                                             </>
                                         )}
                                     </button>

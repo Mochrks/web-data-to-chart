@@ -69,20 +69,24 @@ function CustomTooltip({ active, payload, label }: {
   if (!active || !payload?.length) return null
 
   return (
-    <div className="clay-dropdown p-3 rounded-xl shadow-clay-lg text-black font-bold">
-      <p className="font-medium text-sm mb-2">{label}</p>
-      {payload.map((entry, index) => (
-        <div key={index} className="flex items-center gap-2 text-sm">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-bold">
-            {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
-          </span>
-        </div>
-      ))}
+    <div className="bg-card/95 backdrop-blur-sm p-4 rounded-sm border border-border shadow-zen text-foreground">
+      <p className="font-bold text-xs uppercase tracking-widest mb-3 border-b border-border/40 pb-2">{label}</p>
+      <div className="space-y-2">
+        {payload.map((entry, index) => (
+          <div key={index} className="flex items-center justify-between gap-6 text-[10px] font-medium">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-muted-foreground uppercase tracking-wider">{entry.name}:</span>
+            </div>
+            <span className="font-bold text-foreground">
+              {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -167,16 +171,18 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'line':
         return (
           <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 12 }}
-              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 10, fontWeight: 500 }}
+              stroke="hsl(var(--muted-foreground)/0.4)"
+              axisLine={{ stroke: 'hsl(var(--border)/0.5)' }}
             />
             <YAxis
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 10, fontWeight: 500 }}
               tickFormatter={formatLargeNumber}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="hsl(var(--muted-foreground)/0.4)"
+              axisLine={{ stroke: 'hsl(var(--border)/0.5)' }}
             />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
@@ -199,16 +205,18 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'bar':
         return (
           <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 12 }}
-              stroke="hsl(var(--muted-foreground))"
+              tick={{ fontSize: 10, fontWeight: 500 }}
+              stroke="hsl(var(--muted-foreground)/0.4)"
+              axisLine={{ stroke: 'hsl(var(--border)/0.5)' }}
             />
             <YAxis
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 10, fontWeight: 500 }}
               tickFormatter={formatLargeNumber}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="hsl(var(--muted-foreground)/0.4)"
+              axisLine={{ stroke: 'hsl(var(--border)/0.5)' }}
             />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
@@ -219,7 +227,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
                 dataKey={yKey}
                 name={getColumnLabel(yKey)}
                 fill={colors[index]}
-                radius={[4, 4, 0, 0]}
+                radius={[2, 2, 0, 0]}
               />
             ))}
           </BarChart>
@@ -228,9 +236,9 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'stackedBar':
         return (
           <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 500 }} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
+            <YAxis tick={{ fontSize: 10, fontWeight: 500 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
             {config.yAxes.map((yKey, index) => (
@@ -240,7 +248,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
                 name={getColumnLabel(yKey)}
                 fill={colors[index]}
                 stackId="stack"
-                radius={index === config.yAxes.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                radius={index === config.yAxes.length - 1 ? [2, 2, 0, 0] : [0, 0, 0, 0]}
               />
             ))}
           </BarChart>
@@ -249,9 +257,9 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'area':
         return (
           <AreaChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 500 }} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
+            <YAxis tick={{ fontSize: 10, fontWeight: 500 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
             {enableBrush && <Brush dataKey="name" height={30} stroke="hsl(var(--primary))" />}
@@ -272,9 +280,9 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'stackedArea':
         return (
           <AreaChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 500 }} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
+            <YAxis tick={{ fontSize: 10, fontWeight: 500 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
             {config.yAxes.map((yKey, index) => (
@@ -326,7 +334,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'radar':
         return (
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData.slice(0, 20)}>
-            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarGrid stroke="hsl(var(--border)/0.4)" />
             <PolarAngleAxis dataKey="name" tick={{ fontSize: 11 }} />
             <PolarRadiusAxis tick={{ fontSize: 10 }} />
             <Tooltip content={<CustomTooltip />} />
@@ -352,7 +360,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
 
         return (
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" />
             <XAxis
               type="number"
               dataKey="x"
@@ -386,7 +394,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
 
         return (
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" />
             <XAxis type="number" dataKey="x" name={getColumnLabel(config.xAxis)} tickFormatter={formatLargeNumber} />
             <YAxis type="number" dataKey="y" name={getColumnLabel(config.yAxes[0])} tickFormatter={formatLargeNumber} />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
@@ -405,11 +413,11 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'histogram':
         return (
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} height={60} />
-            <YAxis tick={{ fontSize: 12 }} name="Frequency" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} height={60} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
+            <YAxis tick={{ fontSize: 10 }} name="Frequency" stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="value" name="Frequency" fill={colors[0]} radius={[4, 4, 0, 0]} />
+            <Bar dataKey="value" name="Frequency" fill={colors[0]} radius={[2, 2, 0, 0]} />
           </BarChart>
         )
 
@@ -430,7 +438,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
                   width={width}
                   height={height}
                   fill={treemapColors[index % treemapColors.length]}
-                  rx={4}
+                  rx={2}
                 />
                 {width > 50 && height > 30 && (
                   <>
@@ -463,9 +471,9 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       case 'mixed':
         return (
           <ComposedChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground))" />
+            <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border)/0.3)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 500 }} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
+            <YAxis tick={{ fontSize: 10, fontWeight: 500 }} tickFormatter={formatLargeNumber} stroke="hsl(var(--muted-foreground)/0.4)" axisLine={{ stroke: 'hsl(var(--border)/0.5)' }} />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && <Legend />}
             {config.yAxes.map((yKey, index) => (
@@ -475,7 +483,7 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
                   dataKey={yKey}
                   name={getColumnLabel(yKey)}
                   fill={colors[index]}
-                  radius={[4, 4, 0, 0]}
+                  radius={[2, 2, 0, 0]}
                 />
               ) : (
                 <Line
@@ -516,53 +524,55 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
-      <div className="clay-card rounded-3xl p-6">
+      <div className="bg-card border border-border/40 rounded-sm p-6 shadow-zen">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{chartInfo?.icon}</span>
             <div>
-              <h2 className="text-2xl font-bold text-primary">{chartInfo?.label}</h2>
-              <p className="text-sm text-muted-foreground">
-                {chartData.length.toLocaleString()} data points
+              <h2 className="text-xl font-bold tracking-tight text-foreground uppercase tracking-[0.1em]">{chartInfo?.label}</h2>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                {chartData.length.toLocaleString()} Data Points
               </p>
             </div>
           </div>
 
           {/* Controls */}
           <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-2 clay-badge px-3 py-1">
-              <Label htmlFor="legend-toggle" className="text-sm text-black">Legend</Label>
+            <div className="flex items-center gap-3 bg-muted/20 border border-border/40 px-3 py-1.5 rounded-sm">
+              <Label htmlFor="legend-toggle" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Legend</Label>
               <Switch
                 id="legend-toggle"
                 checked={showLegend}
                 onCheckedChange={setShowLegend}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
 
             {['line', 'bar', 'area'].includes(config.type) && (
-              <div className="flex items-center gap-2 clay-badge px-3 py-1">
-                <Label htmlFor="brush-toggle" className="text-sm text-black">Brush</Label>
+              <div className="flex items-center gap-3 bg-muted/20 border border-border/40 px-3 py-1.5 rounded-sm">
+                <Label htmlFor="brush-toggle" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Brush</Label>
                 <Switch
                   id="brush-toggle"
                   checked={enableBrush}
                   onCheckedChange={setEnableBrush}
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
             )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="clay-badge text-black hover:bg-white/50 transition-colors border-none">
-                  <FaDownload className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="bg-muted/20 border border-border/40 rounded-sm text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all h-auto py-1.5 px-4 shadow-none">
+                  <FaDownload className="h-3 w-3 mr-2" />
                   Export
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="clay-dropdown">
-                <DropdownMenuItem onClick={handleExportPNG}>
+              <DropdownMenuContent className="bg-card border border-border shadow-zen rounded-sm">
+                <DropdownMenuItem onClick={handleExportPNG} className="text-xs uppercase tracking-widest font-bold focus:bg-primary/10 cursor-pointer">
                   Export as PNG
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportSVG}>
+                <DropdownMenuItem onClick={handleExportSVG} className="text-xs uppercase tracking-widest font-bold focus:bg-primary/10 cursor-pointer">
                   Export as SVG
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -571,18 +581,18 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
         </div>
 
         {/* Axis labels */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="outline" className="text-xs">
-            X: {getColumnLabel(config.xAxis)}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Badge variant="outline" className="text-[9px] font-mono tracking-tighter rounded-sm bg-muted/10 border-border/60 uppercase">
+            DIMENSION: {getColumnLabel(config.xAxis)}
           </Badge>
           {config.yAxes.map((yKey, index) => (
             <Badge
               key={yKey}
               variant="outline"
-              className="text-xs"
+              className="text-[9px] font-mono tracking-tighter rounded-sm bg-muted/10 uppercase"
               style={{ borderColor: colors[index], color: colors[index] }}
             >
-              Y{config.yAxes.length > 1 ? index + 1 : ''}: {getColumnLabel(yKey)}
+              MEASURE {config.yAxes.length > 1 ? index + 1 : ''}: {getColumnLabel(yKey)}
             </Badge>
           ))}
         </div>
@@ -591,8 +601,8 @@ export default function ChartView({ data, config, schema }: ChartViewProps) {
         <div
           id="chart-container"
           ref={chartRef}
-          className="clay-inset rounded-2xl p-4"
-          style={{ height: isFullscreen ? '80vh' : '500px' }}
+          className="bg-card/50 border border-border/40 rounded-sm p-4 shadow-inner-light overflow-hidden"
+          style={{ minHeight: isFullscreen ? '80vh' : '500px' }}
         >
           <ResponsiveContainer width="100%" height="100%">
             {renderChart()}

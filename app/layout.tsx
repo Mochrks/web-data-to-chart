@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/theme/theme-provider"
 import { Inter } from 'next/font/google'
 import '@/app/globals.css'
 import { DataProvider } from '@/components/DataContext'
-import SmoothScroll from "@/components/SmoothScroll"
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,7 +26,7 @@ export default function RootLayout({
       <head>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
       </head>
-      <body className={`${inter.className} overflow-x-hidden`}>
+      <body className={`${inter.className} bg-background text-foreground antialiased selection:bg-primary/10 selection:text-primary`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -34,8 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <DataProvider>
-            <SmoothScroll />
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen relative">
               <main className="flex-grow">
                 {children}
               </main>

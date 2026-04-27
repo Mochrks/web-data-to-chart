@@ -12,11 +12,11 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-50 clay-card border-b border-border/50 backdrop-blur-lg">
+    <nav className="sticky top-0 z-50 bg-background/80 border-b border-border/40 backdrop-blur-md">
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="clay-inset p-2 rounded-xl">
+            <div className="border border-border/60 p-2 rounded-sm bg-muted/30">
               <BiBarChart className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -35,7 +35,7 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               asChild
-              className="clay-badge hover:bg-muted/50"
+              className="border border-border/60 hover:bg-muted/50 rounded-sm"
             >
               <a
                 href="https://github.com/Mochrks/web-data-to-chart"
@@ -49,7 +49,7 @@ export default function Navbar() {
           </div>
 
           <button
-            className="sm:hidden clay-badge p-2 rounded-xl hover:bg-muted/50"
+            className="sm:hidden border border-border/60 p-2 rounded-sm hover:bg-muted/50"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -74,7 +74,7 @@ export default function Navbar() {
                   variant="outline"
                   size="sm"
                   asChild
-                  className="clay-badge hover:bg-muted/50"
+                  className="border border-border/60 hover:bg-muted/50 rounded-sm"
                 >
                   <a
                     href="https://github.com/Mochrks/web-data-to-chart"

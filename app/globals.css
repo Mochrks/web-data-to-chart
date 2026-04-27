@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,97 +6,80 @@
 
 @layer base {
   :root {
-    /* Claymorphism Color Palette - Muted Pastels */
-    --background: 30 25% 97%;
-    --foreground: 240 10% 20%;
-    --card: 30 20% 94%;
-    --card-foreground: 240 10% 20%;
-    --popover: 30 20% 96%;
-    --popover-foreground: 240 10% 20%;
+    /* Japanese Minimalist Palette - Washi & Earth Tones */
+    --background: 40 20% 98%;
+    --foreground: 200 10% 20%;
     
-    /* Soft Purple Primary */
-    --primary: 262 50% 55%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 10% 20%;
     
-    /* Muted Rose Accent */
-    --secondary: 350 45% 65%;
-    --secondary-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 10% 20%;
     
-    --muted: 30 15% 90%;
-    --muted-foreground: 240 5% 45%;
+    /* Primary: Zen Green / Matcha */
+    --primary: 140 15% 40%;
+    --primary-foreground: 40 20% 98%;
     
-    /* Soft Accent Color */
-    --accent: 200 45% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Secondary: Soft Stone / Sand */
+    --secondary: 40 10% 90%;
+    --secondary-foreground: 200 10% 25%;
     
-    --destructive: 0 60% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --muted: 40 10% 95%;
+    --muted-foreground: 200 5% 45%;
     
-    --border: 30 15% 85%;
-    --input: 30 15% 88%;
-    --ring: 262 50% 55%;
+    /* Accent: Cedar / Wood */
+    --accent: 30 20% 45%;
+    --accent-foreground: 40 20% 98%;
     
-    /* Muted Chart Colors for Clarity */
-    --chart-1: 262 50% 55%;
-    --chart-2: 200 55% 50%;
-    --chart-3: 350 45% 60%;
-    --chart-4: 45 70% 55%;
-    --chart-5: 160 45% 45%;
-    --chart-6: 25 65% 55%;
-    --chart-7: 290 40% 55%;
-    --chart-8: 175 50% 45%;
+    --destructive: 0 40% 45%;
+    --destructive-foreground: 40 20% 98%;
     
-    --radius: 1rem;
+    --border: 40 10% 88%;
+    --input: 40 10% 90%;
+    --ring: 140 15% 40%;
     
-    /* Clay Shadow Variables */
-    --clay-shadow-light: rgba(255, 255, 255, 0.9);
-    --clay-shadow-dark: rgba(0, 0, 0, 0.08);
-    --clay-inner-light: rgba(255, 255, 255, 0.5);
+    /* Chart Colors - Natural Palette */
+    --chart-1: 140 20% 45%;
+    --chart-2: 30 25% 45%;
+    --chart-3: 180 15% 45%;
+    --chart-4: 350 15% 50%;
+    --chart-5: 45 30% 50%;
+    --chart-6: 200 15% 45%;
+    --chart-7: 280 10% 50%;
+    --chart-8: 100 20% 40%;
+    
+    --radius: 0.375rem;
   }
   
   .dark {
-    /* Dark Mode - Warm Dark Tones */
-    --background: 240 10% 10%;
-    --foreground: 30 15% 92%;
-    --card: 240 8% 14%;
-    --card-foreground: 30 15% 92%;
-    --popover: 240 8% 12%;
-    --popover-foreground: 30 15% 92%;
+    /* Dark Japanese Minimalist - Sumi-e Inspiration */
+    --background: 210 10% 12%;
+    --foreground: 40 10% 90%;
     
-    /* Brighter colors in dark mode */
-    --primary: 262 55% 65%;
-    --primary-foreground: 0 0% 100%;
+    --card: 210 10% 15%;
+    --card-foreground: 40 10% 90%;
     
-    --secondary: 350 50% 70%;
-    --secondary-foreground: 0 0% 100%;
+    --popover: 210 10% 14%;
+    --popover-foreground: 40 10% 90%;
     
-    --muted: 240 8% 20%;
-    --muted-foreground: 30 10% 60%;
+    --primary: 140 10% 55%;
+    --primary-foreground: 210 10% 10%;
     
-    --accent: 200 50% 60%;
-    --accent-foreground: 0 0% 100%;
+    --secondary: 210 10% 20%;
+    --secondary-foreground: 40 5% 85%;
     
-    --destructive: 0 55% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --muted: 210 10% 18%;
+    --muted-foreground: 40 5% 65%;
     
-    --border: 240 8% 20%;
-    --input: 240 8% 18%;
-    --ring: 262 55% 65%;
+    --accent: 30 15% 55%;
+    --accent-foreground: 210 10% 10%;
     
-    /* Vibrant Dark Chart Colors */
-    --chart-1: 262 55% 65%;
-    --chart-2: 200 60% 60%;
-    --chart-3: 350 50% 65%;
-    --chart-4: 45 75% 60%;
-    --chart-5: 160 50% 55%;
-    --chart-6: 25 70% 60%;
-    --chart-7: 290 45% 60%;
-    --chart-8: 175 55% 55%;
+    --destructive: 0 45% 55%;
+    --destructive-foreground: 40 10% 90%;
     
-    /* Clay Shadow Variables - Dark Mode */
-    --clay-shadow-light: rgba(255, 255, 255, 0.05);
-    --clay-shadow-dark: rgba(0, 0, 0, 0.35);
-    --clay-inner-light: rgba(255, 255, 255, 0.03);
+    --border: 210 10% 20%;
+    --input: 210 10% 18%;
+    --ring: 140 10% 55%;
   }
 }
 
@@ -106,31 +89,27 @@
   }
   
   body {
-    @apply bg-[#1a0b2e] text-white antialiased min-h-screen;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply bg-background text-foreground antialiased min-h-screen;
+    font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
   }
   
-  /* Smooth scroll behavior */
-
-
-  /* Scrollbar styling */
+  /* Simple Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 4px;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 4px;
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.4);
   }
 }
 
@@ -139,135 +118,56 @@
     text-wrap: balance;
   }
 
-  /* ================================
-     NEW DESIGN SYSTEM STYLES
-     ================================ */
-
-  /* Background Blobs */
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    z-index: -1;
-    opacity: 0.8;
-  }
-  .blob-1 {
-    top: -20%;
-    left: -20%;
-    width: 1000px;
-    height: 1000px;
-    background: radial-gradient(circle, #8b5cf6 0%, rgba(124, 58, 237, 0.4) 50%, transparent 70%);
-  }
-  .blob-2 {
-    top: -10%;
-    right: -20%;
-    width: 1000px;
-    height: 1000px;
-    background: radial-gradient(circle, #f472b6 0%, rgba(219, 39, 119, 0.4) 50%, transparent 70%);
-  }
-  .blob-3 {
-    bottom: -30%;
-    right: 10%;
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+  /* Japanese Minimalism Utils */
+  .zen-panel {
+    @apply bg-card border border-border shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)];
   }
 
-  /* Glassmorphism base class */
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Claymorphism for floating cards */
-  .clay-card {
-    background: linear-gradient(145deg, #ffffff, #e6e6e6);
-    box-shadow: 
-      5px 5px 10px #1a1a2e, 
-      -5px -5px 10px rgba(255,255,255,0.1),
-      inset 0px -4px 4px rgba(0,0,0,0.1);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.4);
-  }
-
-  /* Text Gradient */
-  .text-gradient-main {
-    background: linear-gradient(to bottom, #ffffff 30%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0px 4px 20px rgba(167, 139, 250, 0.3);
+  .zen-card {
+    @apply bg-white border border-border/60 p-6 transition-all duration-300;
   }
   
-  /* Dashboard Specific Styles */
-  .purple-gradient-bg {
-      background: linear-gradient(90deg, #a88bf4 0%, #8b78ef 100%);
-      box-shadow: 0 4px 15px rgba(139, 120, 239, 0.4);
+  .zen-card:hover {
+    @apply border-border shadow-sm;
   }
 
-  .floating-pill {
-      background: white;
-      box-shadow: 
-          0 4px 15px rgba(0,0,0,0.03),
-          0 1px 3px rgba(0,0,0,0.02),
-          inset 0 1px 0 rgba(255,255,255,1);
-      border: 1px solid rgba(255,255,255,0.6);
+  .text-zen-muted {
+    @apply text-muted-foreground font-light tracking-wide;
   }
 
-  .highlight-row {
-      position: relative;
-      z-index: 10;
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
-      transform: scale(1.002);
-      transition: all 0.3s ease;
-  }
-  
-  .highlight-row td {
-      background: linear-gradient(90deg, rgba(168, 85, 247, 0.15), rgba(236, 72, 153, 0.1));
-      backdrop-filter: blur(4px);
-      border-top: 1px solid rgba(168, 85, 247, 0.4);
-      border-bottom: 1px solid rgba(168, 85, 247, 0.4);
-      padding-top: 16px !important;
-      padding-bottom: 16px !important;
+  .zen-button {
+    @apply relative overflow-hidden transition-all duration-200 active:scale-[0.98];
   }
 
-  .highlight-row td:first-child { 
-      border-top-left-radius: 999px; 
-      border-bottom-left-radius: 999px; 
-      border-left: 1px solid rgba(168, 85, 247, 0.4);
-      padding-left: 24px;
-  }
-  .highlight-row td:last-child { 
-      border-top-right-radius: 999px; 
-      border-bottom-right-radius: 999px; 
-      border-right: 1px solid rgba(168, 85, 247, 0.4);
+  .zen-grid {
+    @apply grid gap-8 md:gap-12;
   }
 
-  .thead-gradient {
-      background: linear-gradient(90deg, rgba(167, 139, 250, 0.35) 0%, rgba(244, 114, 182, 0.3) 100%);
-      border-radius: 16px;
+  .zen-section-padding {
+    @apply py-12 md:py-20 px-6 md:px-12;
   }
 
-  .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+  .zen-transition {
+    @apply transition-all duration-500 ease-in-out;
   }
-  .custom-scroll::-webkit-scrollbar-track {
-      background: transparent;
+
+  /* Fade-in animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
   }
-  .custom-scroll::-webkit-scrollbar-thumb {
-      background-color: #cbd5e1;
-      border-radius: 20px;
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  
-  /* Chart Builder Utilities */
-  .hide-scrollbar::-webkit-scrollbar {
-      display: none;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
-  .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
+
